@@ -1,4 +1,4 @@
-package arrayscript.lang;
+package arrayscript.js;
 
 /**
  * The basic types of plain javascript. A large array will be created to store variables and fields for
