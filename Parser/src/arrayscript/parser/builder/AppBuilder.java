@@ -7,7 +7,7 @@ public class AppBuilder {
 	private final NamespaceBuilder globalNamespace;
 	
 	public AppBuilder() {
-		globalNamespace = new NamespaceBuilder(null);
+		globalNamespace = new NamespaceBuilder(null, null);
 	}
 	
 	public ASApplication build() {

@@ -12,6 +12,14 @@ import arrayscript.parser.util.reading.SourceFolderReader;
 
 public class ArrayScriptParser {
 	
+	/**
+	 * Attempts to parse the source files located in the given directory. If it succeeds, an ASApplication
+	 * instance will be returned that contains all data about the application. If it fails, a
+	 * ParsingException will be thrown that should contain the reason the parsing failed.
+	 * @param sourcesDirectory The directory where all source files should be in
+	 * @return An instance of ASApplication representing the parsed source files
+	 * @throws ParsingException If the parsing failed
+	 */
 	public static ASApplication parse(File sourcesDirectory) throws ParsingException {
 		SourceFilesReader sourceFiles = new SourceFolderReader(sourcesDirectory);
 		try {
@@ -27,7 +35,7 @@ public class ArrayScriptParser {
 		}
 	}
 	
-	private static void processSourceFile(SourceFileReader reader, AppBuilder app) throws ParsingException {
-		
+	private static void processSourceFile(SourceFileReader reader, AppBuilder app) throws ParsingException, IOException {
+		NamespaceParser.parseNamespace(reader, app, app.getGlobalNamespace());
 	}
 }
