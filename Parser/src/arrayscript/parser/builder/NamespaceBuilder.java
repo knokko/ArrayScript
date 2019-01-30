@@ -8,6 +8,8 @@ import arrayscript.lang.Modifier;
 import arrayscript.lang.element.Element;
 import arrayscript.lang.element.Namespace;
 import arrayscript.lang.element.ElementTypes;
+import arrayscript.parser.builder.var.type.TypeBuilder;
+import arrayscript.parser.builder.var.value.ValueBuilder;
 import arrayscript.parser.util.ParsingException;
 
 public class NamespaceBuilder implements ElementBuilder {
@@ -18,8 +20,10 @@ public class NamespaceBuilder implements ElementBuilder {
 	private final Set<Modifier> modifiers;
 	
 	private final List<ElementBuilder> elements;
+	
 	private final List<NamespaceBuilder> namespaces;
 	private final List<ClassBuilder> classes;
+	private final List<VariableBuilder> variables;
 	
 	/**
 	 * Constructs a new empty namespace with the given name and parent. If both name and parent are null,
@@ -43,6 +47,7 @@ public class NamespaceBuilder implements ElementBuilder {
 		this.elements = new ArrayList<ElementBuilder>(30);
 		this.namespaces = new ArrayList<NamespaceBuilder>();
 		this.classes = new ArrayList<ClassBuilder>();
+		this.variables = new ArrayList<VariableBuilder>();
 	}
 	
 	@Override
@@ -102,13 +107,26 @@ public class NamespaceBuilder implements ElementBuilder {
 		
 		// Expanding classes is not allowed, so no other element with the same name may exist
 		if (hasElement(name)) {
-			throw new ParsingException("Duplicated element '" + name + "' in namespace " + this);
+			throw new ParsingException("Multiple elements with name '" + name + "' in namespace " + this);
 		}
 		
 		ClassBuilder classBuilder = new ClassBuilder(name, this);
 		elements.add(classBuilder);
 		classes.add(classBuilder);
 		return classBuilder;
+	}
+	
+	public VariableBuilder createVariable(String name, TypeBuilder type, ValueBuilder value) throws ParsingException {
+		
+		// I don't want multiple elements with the same name
+		if (hasElement(name)) {
+			throw new ParsingException("Multiple elements with name '" + name + "' in namespace " + this);
+		}
+		
+		VariableBuilder varBuilder = new VariableBuilder(type, name, value);
+		elements.add(varBuilder);
+		variables.add(varBuilder);
+		return varBuilder;
 	}
 	
 	public boolean isGlobal() {

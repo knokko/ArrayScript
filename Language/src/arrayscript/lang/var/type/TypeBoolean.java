@@ -1,7 +1,7 @@
 package arrayscript.lang.var.type;
 
-import arrayscript.lang.value.BooleanValue;
-import arrayscript.lang.value.Value;
+import arrayscript.lang.var.value.BooleanValue;
+import arrayscript.lang.var.value.Value;
 
 public class TypeBoolean implements Type {
 	

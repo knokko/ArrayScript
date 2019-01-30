@@ -1,7 +1,7 @@
 package arrayscript.lang.element;
 
-import arrayscript.lang.value.Value;
 import arrayscript.lang.var.type.Type;
+import arrayscript.lang.var.value.Value;
 import arrayscript.util.Checks;
 
 public class Variable implements Element {

@@ -66,18 +66,20 @@ public class NamespaceParser {
 				int indexLeftBracket = name.indexOf('(');
 				if (indexLeftBracket == -1) {
 					
-					// This is a variable
-					if (name.endsWith(";")) {
-						
-						// This is the end of the declaration
-						name = name.substring(0, name.length() - 1);
-					} else {
-						
-						// An initial value is given
+					String equals = reader.next();
+					if (!"=".equals(equals)) {
+						throw new ParsingException("The variable " + name + " of type " + typeName + " is not declared correctly.");
 					}
+					
+					// TODO now read until the ';' and take that as the initial value
 				} else {
 					
 					// This is a function
+					// TODO parse the function as far as possible
+					String firstPartOfParams = name.substring(indexLeftBracket);
+					
+					// This is the actual name, the previous name included a part of the parameters
+					name = name.substring(0, indexLeftBracket);
 				}
 			} else {
 				if (type.needsName()) {

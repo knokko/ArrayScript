@@ -1,6 +1,6 @@
 package arrayscript.lang.var.type;
 
-import arrayscript.lang.value.Value;
+import arrayscript.lang.var.value.Value;
 
 public class TypeAny implements Type {
 	

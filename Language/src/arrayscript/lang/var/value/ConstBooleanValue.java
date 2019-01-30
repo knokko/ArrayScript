@@ -1,4 +1,4 @@
-package arrayscript.lang.value;
+package arrayscript.lang.var.value;
 
 public class ConstBooleanValue implements BooleanValue {
 	

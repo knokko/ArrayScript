@@ -1,6 +1,6 @@
 package arrayscript.lang.var.type;
 
-import arrayscript.lang.value.Value;
+import arrayscript.lang.var.value.Value;
 
 /**
  * All types that ArrayScript variables and properties can have must implement this interface.
