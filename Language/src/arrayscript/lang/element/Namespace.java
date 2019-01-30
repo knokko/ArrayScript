@@ -1,4 +1,4 @@
-package arrayscript.lang;
+package arrayscript.lang.element;
 
 import java.util.Arrays;
 
@@ -11,13 +11,13 @@ import arrayscript.util.Checks;
  * @author knokko
  *
  */
-public class ASNamespace implements ASElement {
+public class Namespace implements Element {
 	
 	private final String name;
 	
-	private final ASElement[] elements;
+	private final Element[] elements;
 	
-	public ASNamespace(String name, ASElement[] elements) {
+	public Namespace(String name, Element[] elements) {
 		this.name = name;
 		Checks.noNull(elements, "elements");
 		this.elements = elements;
@@ -45,7 +45,7 @@ public class ASNamespace implements ASElement {
 	 * the element array of this namespace, but the elements in the array are not.
 	 * @return a copy of the array containing the elements of this namespace
 	 */
-	public ASElement[] getElements() {
+	public Element[] getElements() {
 		return Arrays.copyOf(elements, elements.length);
 	}
 }

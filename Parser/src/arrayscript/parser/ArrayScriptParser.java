@@ -3,7 +3,7 @@ package arrayscript.parser;
 import java.io.File;
 import java.io.IOException;
 
-import arrayscript.lang.ASApplication;
+import arrayscript.lang.Application;
 import arrayscript.parser.builder.AppBuilder;
 import arrayscript.parser.util.ParsingException;
 import arrayscript.parser.util.reading.SourceFileReader;
@@ -20,7 +20,7 @@ public class ArrayScriptParser {
 	 * @return An instance of ASApplication representing the parsed source files
 	 * @throws ParsingException If the parsing failed
 	 */
-	public static ASApplication parse(File sourcesDirectory) throws ParsingException {
+	public static Application parse(File sourcesDirectory) throws ParsingException {
 		SourceFilesReader sourceFiles = new SourceFolderReader(sourcesDirectory);
 		try {
 			AppBuilder application = new AppBuilder();

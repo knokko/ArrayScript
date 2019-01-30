@@ -19,6 +19,15 @@ public enum Keywords {
 	MAIN,
 	
 	/*
+	 * Class-related keywords
+	 */
+	STATIC,
+	CONSTRUCTOR,
+	GETTER,
+	SETTER,
+	
+	
+	/*
 	 * Variable types
 	 */
 	ANY,
@@ -37,5 +46,12 @@ public enum Keywords {
 	 * Modifiers
 	 */
 	CONST,
-	STATIC,
+	DEFINE,
+	OPEN,
+	CLOSED,
+	
+	/*
+	 * Other
+	 */
+	SCOPE,
 }

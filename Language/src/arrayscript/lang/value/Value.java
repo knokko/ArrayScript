@@ -5,4 +5,4 @@ package arrayscript.lang.value;
  * @author knokko
  *
  */
-public interface ASValue {}
+public interface Value {}

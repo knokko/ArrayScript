@@ -1,16 +1,16 @@
-package arrayscript.lang;
+package arrayscript.lang.element;
 
-import arrayscript.lang.type.ASType;
-import arrayscript.lang.value.ASValue;
+import arrayscript.lang.value.Value;
+import arrayscript.lang.var.type.Type;
 import arrayscript.util.Checks;
 
-public class ASVariable implements ASElement {
+public class Variable implements Element {
 	
 	private final String name;
-	private final ASType type;
-	private final ASValue defaultValue;
+	private final Type type;
+	private final Value defaultValue;
 	
-	public ASVariable(String name, ASType type, ASValue defaultValue) {
+	public Variable(String name, Type type, Value defaultValue) {
 		Checks.notNull(name, "name");
 		this.name = name;
 		Checks.notNull(type, "type");
@@ -22,7 +22,7 @@ public class ASVariable implements ASElement {
 		return name;
 	}
 	
-	public ASType getType() {
+	public Type getType() {
 		return type;
 	}
 	
@@ -30,7 +30,7 @@ public class ASVariable implements ASElement {
 		return defaultValue != null;
 	}
 	
-	public ASValue getDefaultValue() {
+	public Value getDefaultValue() {
 		return defaultValue;
 	}
 }

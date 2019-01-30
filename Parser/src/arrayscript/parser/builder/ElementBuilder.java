@@ -1,10 +1,10 @@
 package arrayscript.parser.builder;
 
-import arrayscript.lang.ASElement;
+import arrayscript.lang.element.Element;
 
 public interface ElementBuilder {
 	
 	String getName();
 	
-	ASElement build();
+	Element build();
 }

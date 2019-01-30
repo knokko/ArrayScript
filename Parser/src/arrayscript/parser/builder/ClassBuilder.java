@@ -1,6 +1,6 @@
 package arrayscript.parser.builder;
 
-import arrayscript.lang.ASElement;
+import arrayscript.lang.element.Element;
 
 public class ClassBuilder implements ElementBuilder {
 	
@@ -27,7 +27,7 @@ public class ClassBuilder implements ElementBuilder {
 	}
 
 	@Override
-	public ASElement build() {
+	public Element build() {
 		// TODO Auto-generated method stub
 		return null;
 	}

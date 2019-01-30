@@ -1,5 +1,6 @@
 package arrayscript.lang;
 
+import arrayscript.lang.element.Namespace;
 import arrayscript.util.Checks;
 
 /**
@@ -8,16 +9,16 @@ import arrayscript.util.Checks;
  * @author knokko
  *
  */
-public class ASApplication {
+public class Application {
 	
-	private final ASNamespace globalNamespace;
+	private final Namespace globalNamespace;
 	
-	public ASApplication(ASNamespace globalNamespace) {
+	public Application(Namespace globalNamespace) {
 		Checks.notNull(globalNamespace, "globalNamespace");
 		this.globalNamespace = globalNamespace;
 	}
 	
-	public ASNamespace getGlobalNamespace() {
+	public Namespace getGlobalNamespace() {
 		return globalNamespace;
 	}
 }

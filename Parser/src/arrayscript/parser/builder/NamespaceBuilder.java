@@ -2,9 +2,12 @@ package arrayscript.parser.builder;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
-import arrayscript.lang.ASElement;
-import arrayscript.lang.ASNamespace;
+import arrayscript.lang.Modifier;
+import arrayscript.lang.element.Element;
+import arrayscript.lang.element.Namespace;
+import arrayscript.lang.element.ElementTypes;
 import arrayscript.parser.util.ParsingException;
 
 public class NamespaceBuilder implements ElementBuilder {
@@ -12,8 +15,11 @@ public class NamespaceBuilder implements ElementBuilder {
 	private final NamespaceBuilder parent;
 	private final String name;
 	
+	private final Set<Modifier> modifiers;
+	
 	private final List<ElementBuilder> elements;
 	private final List<NamespaceBuilder> namespaces;
+	private final List<ClassBuilder> classes;
 	
 	/**
 	 * Constructs a new empty namespace with the given name and parent. If both name and parent are null,
@@ -21,14 +27,22 @@ public class NamespaceBuilder implements ElementBuilder {
 	 * @param name The name of this namespace, or null if this is the global namespace
 	 * @param parent The parent namespace of this namespace, or null if this is the global namespace
 	 */
-	public NamespaceBuilder(String name, NamespaceBuilder parent) {
-		if ((name == null) != (parent == null)) {
-			throw new IllegalArgumentException("name and parent must be both null or both not null");
+	public NamespaceBuilder(String name, Set<Modifier> modifiers, NamespaceBuilder parent) throws ParsingException {
+		if (!(name == null && parent == null && modifiers.isEmpty()) && !(name != null && parent != null)) {
+			throw new IllegalArgumentException("Global namespace has no name, parent and modifiers and normal namespaces must have a name and parent.");
 		}
 		this.name = name;
 		this.parent = parent;
+		
+		for (Modifier modifier : modifiers) {
+			if (!ElementTypes.NAMESPACE.canHave(modifier)) {
+				throw new ParsingException("Namespaces can't have the " + modifier + " modifier, but " + name + " has it.");
+			}
+		}
+		this.modifiers = modifiers;
 		this.elements = new ArrayList<ElementBuilder>(30);
 		this.namespaces = new ArrayList<NamespaceBuilder>();
+		this.classes = new ArrayList<ClassBuilder>();
 	}
 	
 	@Override
@@ -42,13 +56,13 @@ public class NamespaceBuilder implements ElementBuilder {
 		}
 	}
 	
-	public ASNamespace build() {
-		ASElement[] finishedElements = new ASElement[elements.size()];
+	public Namespace build() {
+		Element[] finishedElements = new Element[elements.size()];
 		int index = 0;
 		for (ElementBuilder builder : elements) {
 			finishedElements[index++] = builder.build();
 		}
-		return new ASNamespace(name, finishedElements);
+		return new Namespace(name, finishedElements);
 	}
 	
 	public String getName() {
@@ -64,7 +78,7 @@ public class NamespaceBuilder implements ElementBuilder {
 	 * @return a possibly empty namespace that is ready to be expanded
 	 * @throws ParsingException if there exists a non-namespace element with the given name
 	 */
-	public NamespaceBuilder createNamespace(String name) throws ParsingException {
+	public NamespaceBuilder createNamespace(String name, Set<Modifier> modifiers) throws ParsingException {
 		
 		// If there is already a namespace with the given name, let it be expanded
 		NamespaceBuilder namespace = getNamespace(name);
@@ -78,14 +92,31 @@ public class NamespaceBuilder implements ElementBuilder {
 		}
 		
 		// Create a new namespace
-		namespace = new NamespaceBuilder(name, this);
+		namespace = new NamespaceBuilder(name, modifiers, this);
 		elements.add(namespace);
 		namespaces.add(namespace);
 		return namespace;
 	}
 	
+	public ClassBuilder createClass(String name) throws ParsingException {
+		
+		// Expanding classes is not allowed, so no other element with the same name may exist
+		if (hasElement(name)) {
+			throw new ParsingException("Duplicated element '" + name + "' in namespace " + this);
+		}
+		
+		ClassBuilder classBuilder = new ClassBuilder(name, this);
+		elements.add(classBuilder);
+		classes.add(classBuilder);
+		return classBuilder;
+	}
+	
 	public boolean isGlobal() {
 		return parent == null;
+	}
+	
+	public boolean isConstant() {
+		return modifiers.contains(Modifier.CONST);
 	}
 	
 	public boolean hasElement(String name) {
