@@ -1,16 +1,24 @@
 package arrayscript.parser;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import arrayscript.lang.Modifier;
 import arrayscript.lang.element.ElementType;
 import arrayscript.lang.element.ElementTypes;
+import arrayscript.lang.var.type.PrimitiveTypes;
+import arrayscript.lang.var.type.Type;
 import arrayscript.parser.builder.AppBuilder;
 import arrayscript.parser.builder.NamespaceBuilder;
+import arrayscript.parser.builder.param.ParamsBuilder;
+import arrayscript.parser.builder.var.type.TypeBuilder;
+import arrayscript.parser.builder.var.value.ValueBuilder;
 import arrayscript.parser.util.ParsingException;
 import arrayscript.parser.util.reading.SourceFileReader;
+import arrayscript.util.ArrayHelper;
 
 public class NamespaceParser {
 	
@@ -56,6 +64,16 @@ public class NamespaceParser {
 			// type names that do not have special meaning in source code will be treated as normal names
 			if (type == null || !type.shouldAppearInSource()) {
 				
+				// If the type is primitive, we can easily confirm it already
+				// If not, we will check for the declaration in a later stage
+				Type primitiveType = PrimitiveTypes.getByName(typeName);
+				TypeBuilder typeBuilder;
+				if (primitiveType == null) {
+					typeBuilder = new TypeBuilder(typeName);
+				} else {
+					typeBuilder = new TypeBuilder(primitiveType);
+				}
+				
 				// Read the name of the variable/function
 				String name = reader.next();
 				if (name == null) {
@@ -66,20 +84,59 @@ public class NamespaceParser {
 				int indexLeftBracket = name.indexOf('(');
 				if (indexLeftBracket == -1) {
 					
+					// Should be followed by the equals sign
 					String equals = reader.next();
 					if (!"=".equals(equals)) {
 						throw new ParsingException("The variable " + name + " of type " + typeName + " is not declared correctly.");
 					}
 					
-					// TODO now read until the ';' and take that as the initial value
+					// Everything until the ';' should be the unparsed initial value
+					List<String> unparsedValueList = new ArrayList<String>();
+					String partOfValue = reader.next();
+					
+					if (partOfValue == null) {
+						throw new ParsingException("The end of file was reached before " + typeName + " " + name + " started its initial value");
+					}
+					
+					while (!partOfValue.endsWith(";")) {
+						
+						unparsedValueList.add(partOfValue);
+						partOfValue = reader.next();
+						
+						// Throw a ParsingException instead of NullPointerException
+						if (partOfValue == null) {
+							throw new ParsingException("The variable " + name + " of type " + typeName + " has an unfinished intial value.");
+						}
+					}
+					
+					String unparsedValue = ArrayHelper.concatenate(unparsedValueList);
+					
+					namespace.createVariable(name, typeBuilder, new ValueBuilder(unparsedValue));
 				} else {
 					
-					// This is a function
-					// TODO parse the function as far as possible
-					String firstPartOfParams = name.substring(indexLeftBracket);
+					// This is a function, so lets gather the parameters
+					String params = name.substring(indexLeftBracket);
+					
+					List<String> paramsList = new ArrayList<String>();
+					while (!params.contains("{")) {
+						paramsList.add(params);
+						params = reader.next();
+					}
+					
+					// It is possible that there is something right before the {
+					if (!params.startsWith("{")) {
+						paramsList.add(params.substring(0, params.indexOf('{')));
+					}
+					
+					// Observe that this includes the opening ( and the closing )
+					String fullParams = ArrayHelper.concatenate(paramsList);
 					
 					// This is the actual name, the previous name included a part of the parameters
 					name = name.substring(0, indexLeftBracket);
+					
+					ParamsBuilder parameters = ParamsParser.parse(fullParams);
+					
+					// TODO parse parameters and add the function to the namespace
 				}
 			} else {
 				if (type.needsName()) {

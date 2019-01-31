@@ -11,4 +11,14 @@ public class TypeBoolean implements Type {
 	public boolean canHaveValue(Value value) {
 		return value instanceof BooleanValue;
 	}
+
+	@Override
+	public String getName() {
+		return "boolean";
+	}
+
+	@Override
+	public boolean isPrimitive() {
+		return true;
+	}
 }

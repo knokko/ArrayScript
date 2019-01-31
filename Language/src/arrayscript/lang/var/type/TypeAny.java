@@ -10,4 +10,14 @@ public class TypeAny implements Type {
 	public boolean canHaveValue(Value value) {
 		return true;
 	}
+
+	@Override
+	public String getName() {
+		return "any";
+	}
+
+	@Override
+	public boolean isPrimitive() {
+		return true;
+	}
 }

@@ -18,4 +18,18 @@ public class ArrayHelper {
 		
 		return false;
 	}
+	
+	public static String concatenate(List<String> strings) {
+		int length = 0;
+		for (String string : strings) {
+			length += string.length();
+		}
+		
+		StringBuilder builder = new StringBuilder(length);
+		for (String string : strings) {
+			builder.append(string);
+		}
+		
+		return builder.toString();
+	}
 }

@@ -8,6 +8,7 @@ import arrayscript.lang.Modifier;
 import arrayscript.lang.element.Element;
 import arrayscript.lang.element.Namespace;
 import arrayscript.lang.element.ElementTypes;
+import arrayscript.parser.builder.param.ParamsBuilder;
 import arrayscript.parser.builder.var.type.TypeBuilder;
 import arrayscript.parser.builder.var.value.ValueBuilder;
 import arrayscript.parser.util.ParsingException;
@@ -24,6 +25,7 @@ public class NamespaceBuilder implements ElementBuilder {
 	private final List<NamespaceBuilder> namespaces;
 	private final List<ClassBuilder> classes;
 	private final List<VariableBuilder> variables;
+	private final List<FunctionBuilder> functions;
 	
 	/**
 	 * Constructs a new empty namespace with the given name and parent. If both name and parent are null,
@@ -48,6 +50,7 @@ public class NamespaceBuilder implements ElementBuilder {
 		this.namespaces = new ArrayList<NamespaceBuilder>();
 		this.classes = new ArrayList<ClassBuilder>();
 		this.variables = new ArrayList<VariableBuilder>();
+		this.functions = new ArrayList<FunctionBuilder>();
 	}
 	
 	@Override
@@ -127,6 +130,21 @@ public class NamespaceBuilder implements ElementBuilder {
 		elements.add(varBuilder);
 		variables.add(varBuilder);
 		return varBuilder;
+	}
+	
+	public FunctionBuilder createFunction(String name, TypeBuilder returnType, ParamsBuilder parameters) throws ParsingException {
+		
+		// It is allowed to have multiple functions with the same name as long as they have different params
+		for (ElementBuilder element : elements) {
+			if (!(element instanceof FunctionBuilder) && element.getName().equals(name)) {
+				throw new ParsingException("Multiple elemetns with name '" + name + "' in namespace " + this);
+			}
+		}
+		
+		FunctionBuilder functionBuilder = new FunctionBuilder(name, returnType, parameters);
+		elements.add(functionBuilder);
+		functions.add(functionBuilder);
+		return functionBuilder;
 	}
 	
 	public boolean isGlobal() {

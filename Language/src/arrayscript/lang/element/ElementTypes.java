@@ -60,14 +60,17 @@ public class ElementTypes {
 	 */
 	public static final ElementType.Main MAIN = new ElementType.Main();
 	
-	private static final Map<String,ElementType> NAME_MAP = new HashMap<String,ElementType>();
+	private static final Map<String,ElementType> NAME_MAP;
 	
 	static {
 		Field[] fields = ElementTypes.class.getDeclaredFields();
+		NAME_MAP = new HashMap<String,ElementType>(fields.length - 1);
 		for (Field field : fields) {
 			try {
-				ElementType type = (ElementType) field.get(null);
-				NAME_MAP.put(type.getName(), type);
+				if (field.getType() != HashMap.class) {
+					ElementType type = (ElementType) field.get(null);
+					NAME_MAP.put(type.getName(), type);
+				}
 			} catch (Exception ex) {
 				throw new Error(ex);
 			}
