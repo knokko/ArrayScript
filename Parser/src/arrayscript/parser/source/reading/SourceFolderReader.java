@@ -1,4 +1,4 @@
-package arrayscript.parser.util.reading;
+package arrayscript.parser.source.reading;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -54,10 +54,10 @@ public class SourceFolderReader implements SourceFilesReader {
 	}
 
 	@Override
-	public SourceFileReader next() throws IOException {
+	public SourceFileReader1 next() throws IOException {
 		Scanner nextScanner = findNextScanner();
 		if (nextScanner != null) {
-			return new SimpleSourceFileReader(nextScanner);
+			return new SimpleSourceFileReader1(nextScanner);
 		} else {
 			return null;
 		}

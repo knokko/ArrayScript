@@ -1,9 +1,9 @@
-package arrayscript.parser.util.reading;
+package arrayscript.parser.source.reading;
 
 import java.io.IOException;
 import java.util.Scanner;
 
-public class SimpleSourceFileReader implements SourceFileReader {
+public class SimpleSourceFileReader1 implements SourceFileReader1 {
 
 	private static boolean isSeparator(char value) {
 		return Character.isWhitespace(value);
@@ -16,7 +16,7 @@ public class SimpleSourceFileReader implements SourceFileReader {
 	private boolean inDoubleString;
 	private boolean inSingleString;
 
-	public SimpleSourceFileReader(Scanner fileScanner) {
+	public SimpleSourceFileReader1(Scanner fileScanner) {
 		scanner = fileScanner;
 	}
 
@@ -75,24 +75,19 @@ public class SimpleSourceFileReader implements SourceFileReader {
 		int endIndex = currentIndex;
 		char current = endIndex < currentLine.length() ? currentLine.charAt(endIndex) : 0;
 		while (endIndex < currentLine.length() && (!isSeparator(current) || inDoubleString || inSingleString)) {
-			//System.out.println("current char is " + current);
 			if (current == '"' && !inSingleString) {
-				System.out.println("swap in double string");
 				inDoubleString = !inDoubleString;
 			} else if (current == '\'' && !inDoubleString) {
 				inSingleString = !inSingleString;
 			}
 			endIndex++;
-			//System.out.println("change endIndex to " + endIndex);
 			if (endIndex < currentLine.length()) {
 				current = currentLine.charAt(endIndex);
-				//System.out.println("change current to " + current);
 			}
 		}
 		if (endIndex == currentLine.length() && (inSingleString || inDoubleString)) {
 			throw new IOException("Unterminated string");
 		}
-		System.out.println("currentIndex is " + currentIndex + " and endIndex is " + endIndex);
 		String result = currentLine.substring(currentIndex, endIndex);
 		currentIndex = endIndex + 1;
 		return result;

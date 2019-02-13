@@ -16,8 +16,8 @@ import arrayscript.parser.builder.NamespaceBuilder;
 import arrayscript.parser.builder.param.ParamsBuilder;
 import arrayscript.parser.builder.var.type.TypeBuilder;
 import arrayscript.parser.builder.var.value.ValueBuilder;
+import arrayscript.parser.source.reading.SourceFileReader1;
 import arrayscript.parser.util.ParsingException;
-import arrayscript.parser.util.reading.SourceFileReader;
 import arrayscript.util.ArrayHelper;
 
 public class NamespaceParser {
@@ -35,7 +35,7 @@ public class NamespaceParser {
 	 * @throws ParsingException If the provided source can not be parsed
 	 * @throws IOException if the provided reader throws an IOException
 	 */
-	public static void parseNamespace(SourceFileReader reader, AppBuilder app, NamespaceBuilder namespace) throws ParsingException, IOException {
+	public static void parseNamespace(SourceFileReader1 reader, AppBuilder app, NamespaceBuilder namespace) throws ParsingException, IOException {
 		while (true) {
 			
 			// This is probably the type of the element that is about to be declared

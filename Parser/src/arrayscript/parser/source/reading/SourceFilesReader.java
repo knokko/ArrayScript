@@ -1,4 +1,4 @@
-package arrayscript.parser.util.reading;
+package arrayscript.parser.source.reading;
 
 import java.io.IOException;
 
@@ -15,5 +15,5 @@ public interface SourceFilesReader {
 	 * in the source folders have been read, this method returns null
 	 * @return A SourceFileReader for the next source file, or null if all source files have been read
 	 */
-	SourceFileReader next() throws IOException;
+	SourceFileReader1 next() throws IOException;
 }

@@ -11,6 +11,7 @@ import arrayscript.lang.element.ElementTypes;
 import arrayscript.parser.builder.param.ParamsBuilder;
 import arrayscript.parser.builder.var.type.TypeBuilder;
 import arrayscript.parser.builder.var.value.ValueBuilder;
+import arrayscript.parser.executable.ExecutableBuilder;
 import arrayscript.parser.util.ParsingException;
 
 public class NamespaceBuilder implements ElementBuilder {
@@ -132,7 +133,7 @@ public class NamespaceBuilder implements ElementBuilder {
 		return varBuilder;
 	}
 	
-	public FunctionBuilder createFunction(String name, TypeBuilder returnType, ParamsBuilder parameters) throws ParsingException {
+	public FunctionBuilder createFunction(String name, TypeBuilder returnType, ParamsBuilder parameters, ExecutableBuilder body) throws ParsingException {
 		
 		// It is allowed to have multiple functions with the same name as long as they have different params
 		for (ElementBuilder element : elements) {
@@ -141,7 +142,7 @@ public class NamespaceBuilder implements ElementBuilder {
 			}
 		}
 		
-		FunctionBuilder functionBuilder = new FunctionBuilder(name, returnType, parameters);
+		FunctionBuilder functionBuilder = new FunctionBuilder(name, returnType, parameters, body);
 		elements.add(functionBuilder);
 		functions.add(functionBuilder);
 		return functionBuilder;

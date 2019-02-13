@@ -1,14 +1,15 @@
-package arrayscript.parser.util.reading;
+package arrayscript.parser.source.reading;
 
 import java.io.IOException;
 
 /**
- * Instances of SourceFileReader read a single source file 'word by world' where words are any strings that
- * are separated by whitespace characters and/or line terminators.
+ * The first source file reader in the chain of source readers. The task of this reader is to find all 'words'
+ * that are separated by whitespace characters, except for those whitespace characters that are in a string.
+ * (So this reader will not break strings.)
  * @author knokko
  *
  */
-public interface SourceFileReader {
+public interface SourceFileReader1 {
 	
 	/**
 	 * Reads the next String that is separated by whitespace characters or line endings.

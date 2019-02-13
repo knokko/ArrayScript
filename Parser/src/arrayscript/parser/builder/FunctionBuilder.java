@@ -3,6 +3,7 @@ package arrayscript.parser.builder;
 import arrayscript.lang.element.Element;
 import arrayscript.parser.builder.param.ParamsBuilder;
 import arrayscript.parser.builder.var.type.TypeBuilder;
+import arrayscript.parser.executable.ExecutableBuilder;
 
 public class FunctionBuilder implements ElementBuilder {
 	
@@ -12,10 +13,13 @@ public class FunctionBuilder implements ElementBuilder {
 	
 	private final ParamsBuilder parameters;
 	
-	public FunctionBuilder(String name, TypeBuilder returnType, ParamsBuilder parameters) {
+	private final ExecutableBuilder body;
+	
+	public FunctionBuilder(String name, TypeBuilder returnType, ParamsBuilder parameters, ExecutableBuilder body) {
 		this.name = name;
 		this.returnType = returnType;
 		this.parameters = parameters;
+		this.body = body;
 	}
 	
 	public String getName() {
@@ -30,8 +34,12 @@ public class FunctionBuilder implements ElementBuilder {
 		return parameters;
 	}
 	
+	public ExecutableBuilder getBody() {
+		return body;
+	}
+	
 	public boolean isConfirmed() {
-		return returnType.isTypeConfirmed() && parameters.isConfirmed();
+		return returnType.isTypeConfirmed() && parameters.isConfirmed() && body.isConfirmed();
 	}
 
 	@Override
