@@ -7,8 +7,9 @@ import arrayscript.parser.source.SourceElement;
 import arrayscript.parser.source.SourceElementType;
 import arrayscript.parser.source.SourceOperator;
 import arrayscript.parser.source.SourceWord;
+import arrayscript.parser.util.ParsingException;
 
-public class DefaultSourceFileReader3 implements SourceFileReader3 {
+class DefaultSourceFileReader3 implements SourceFileReader3 {
 	
 	private static final Operator[] OPERATORS = Operator.values();
 	
@@ -22,7 +23,7 @@ public class DefaultSourceFileReader3 implements SourceFileReader3 {
 	}
 
 	@Override
-	public SourceElement next() throws IOException {
+	public SourceElement next() throws IOException, ParsingException {
 		if (currentWord == null) {
 			
 			SourceElement next = second.next();

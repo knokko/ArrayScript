@@ -5,7 +5,7 @@ import java.io.IOException;
 
 import arrayscript.lang.Application;
 import arrayscript.parser.builder.AppBuilder;
-import arrayscript.parser.source.reading.SourceFileReader1;
+import arrayscript.parser.source.reading.SourceFileReader;
 import arrayscript.parser.source.reading.SourceFilesReader;
 import arrayscript.parser.source.reading.SourceFolderReader;
 import arrayscript.parser.util.ParsingException;
@@ -24,7 +24,7 @@ public class ArrayScriptParser {
 		SourceFilesReader sourceFiles = new SourceFolderReader(sourcesDirectory);
 		try {
 			AppBuilder application = new AppBuilder();
-			SourceFileReader1 reader = sourceFiles.next();
+			SourceFileReader reader = sourceFiles.next();
 			while (reader != null) {
 				processSourceFile(reader, application);
 				reader = sourceFiles.next();
@@ -35,7 +35,7 @@ public class ArrayScriptParser {
 		}
 	}
 	
-	private static void processSourceFile(SourceFileReader1 reader, AppBuilder app) throws ParsingException, IOException {
+	private static void processSourceFile(SourceFileReader reader, AppBuilder app) throws ParsingException, IOException {
 		NamespaceParser.parseNamespace(reader, app, app.getGlobalNamespace());
 	}
 }

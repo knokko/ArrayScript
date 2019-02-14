@@ -54,10 +54,10 @@ public class SourceFolderReader implements SourceFilesReader {
 	}
 
 	@Override
-	public SourceFileReader1 next() throws IOException {
+	public SourceFileReader next() throws IOException {
 		Scanner nextScanner = findNextScanner();
 		if (nextScanner != null) {
-			return new SimpleSourceFileReader1(nextScanner);
+			return new SimpleSourceFileReader(new DefaultSourceFileReader3(new DefaultSourceFileReader2(new SimpleSourceFileReader1(nextScanner))));
 		} else {
 			return null;
 		}

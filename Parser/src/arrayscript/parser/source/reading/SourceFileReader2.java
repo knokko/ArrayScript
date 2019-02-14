@@ -3,6 +3,7 @@ package arrayscript.parser.source.reading;
 import java.io.IOException;
 
 import arrayscript.parser.source.SourceElement;
+import arrayscript.parser.util.ParsingException;
 
 /**
  * The second source reader in the chain of source file readers. This reader will take the result of the first
@@ -12,7 +13,7 @@ import arrayscript.parser.source.SourceElement;
  * @author knokko
  *
  */
-public interface SourceFileReader2 {
+interface SourceFileReader2 {
 	
 	/**
 	 * Determines the next word or string that is read from the source. It will process the words returned by
@@ -22,6 +23,7 @@ public interface SourceFileReader2 {
 	 * @return The next string or word that is read from the source code, or null if the end of source has
 	 * been reached
 	 * @throws IOException if the first reader throws an IOException
+	 * @throws ParsingException If the source code is incorrect and thus can't be parsed
 	 */
-	SourceElement next() throws IOException;
+	SourceElement next() throws IOException, ParsingException;
 }

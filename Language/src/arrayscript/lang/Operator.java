@@ -28,6 +28,7 @@ public enum Operator {
 	ASSIGNMENT("="),
 	NEXT(","),
 	PROPERTY("."),
+	SEMICOLON(";"),
 	
 	// Mathematical operators
 	SUM("+"),

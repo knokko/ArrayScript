@@ -5,8 +5,9 @@ import java.io.IOException;
 import arrayscript.parser.source.SourceElement;
 import arrayscript.parser.source.SourceString;
 import arrayscript.parser.source.SourceWord;
+import arrayscript.parser.util.ParsingException;
 
-public class DefaultSourceFileReader2 implements SourceFileReader2 {
+class DefaultSourceFileReader2 implements SourceFileReader2 {
 	
 	private final SourceFileReader1 first;
 	
@@ -18,7 +19,7 @@ public class DefaultSourceFileReader2 implements SourceFileReader2 {
 	}
 
 	@Override
-	public SourceElement next() throws IOException {
+	public SourceElement next() throws IOException, ParsingException {
 		
 		// This happens at the first call to next or after the previous word has been processed
 		if (currentWord == null) {

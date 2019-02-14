@@ -1,14 +1,17 @@
 package arrayscript.parser.builder.var.value;
 
+import java.util.List;
+
 import arrayscript.lang.var.value.Value;
+import arrayscript.parser.source.SourceElement;
 
 public class ValueBuilder {
 	
-	private final String unparsedValue;
+	private final List<SourceElement> unparsedValue;
 	
 	private Value value;
 	
-	public ValueBuilder(String unparsedValue) {
+	public ValueBuilder(List<SourceElement> unparsedValue) {
 		this.unparsedValue = unparsedValue;
 	}
 	
@@ -17,7 +20,7 @@ public class ValueBuilder {
 		this.value = value;
 	}
 	
-	public String getUnparsedValue() {
+	public List<SourceElement> getUnparsedValue() {
 		return unparsedValue;
 	}
 	

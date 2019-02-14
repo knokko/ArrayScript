@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Set;
 
 import arrayscript.lang.Modifier;
+import arrayscript.lang.Operator;
 import arrayscript.lang.element.ElementType;
 import arrayscript.lang.element.ElementTypes;
 import arrayscript.lang.var.type.PrimitiveTypes;
@@ -16,166 +17,219 @@ import arrayscript.parser.builder.NamespaceBuilder;
 import arrayscript.parser.builder.param.ParamsBuilder;
 import arrayscript.parser.builder.var.type.TypeBuilder;
 import arrayscript.parser.builder.var.value.ValueBuilder;
-import arrayscript.parser.source.reading.SourceFileReader1;
+import arrayscript.parser.source.SourceElement;
+import arrayscript.parser.source.SourceElementType;
+import arrayscript.parser.source.reading.SourceFileReader;
 import arrayscript.parser.util.ParsingException;
 import arrayscript.util.ArrayHelper;
 
 public class NamespaceParser {
-	
+
 	/**
-	 * Attempts to parse the content of a single namespace. This method must be called after the name of the
-	 * namespace and the '{' have been read. The read name should be used to create the NamespaceBuilder
-	 * instance that is required for this method. The namespace does not necessarily have to be empty, if it
-	 * is not empty, the parsed content will be added to it. After the content is parsed, the closing '}' will
-	 * be read.
-	 * @param reader The reader that should be used to read the content
-	 * @param app The instance of the AppBuilder that is being used, it will be used to link certain elements
-	 * if they are referred to.
-	 * @param namespace The namespace builder where all parsed content will be added to
-	 * @throws ParsingException If the provided source can not be parsed
-	 * @throws IOException if the provided reader throws an IOException
+	 * Attempts to parse the content of a single namespace. This method must be
+	 * called after the name of the namespace and the '{' have been read. The read
+	 * name should be used to create the NamespaceBuilder instance that is required
+	 * for this method. The namespace does not necessarily have to be empty, if it
+	 * is not empty, the parsed content will be added to it. After the content is
+	 * parsed, the closing '}' will be read.
+	 * 
+	 * @param reader    The reader that should be used to read the content
+	 * @param app       The instance of the AppBuilder that is being used, it will
+	 *                  be used to link certain elements if they are referred to.
+	 * @param namespace The namespace builder where all parsed content will be added
+	 *                  to
+	 * @throws ParsingException If the provided source is not valid ArrayScript
+	 * @throws IOException      if the provided reader throws an IOException
 	 */
-	public static void parseNamespace(SourceFileReader1 reader, AppBuilder app, NamespaceBuilder namespace) throws ParsingException, IOException {
+	public static void parseNamespace(SourceFileReader reader, AppBuilder app, NamespaceBuilder namespace)
+			throws ParsingException, IOException {
 		while (true) {
-			
-			// This is probably the type of the element that is about to be declared
-			String typeName = reader.next();
-			
-			// Check if this is not the end
-			if (typeName == null || typeName.equals("}")) {
-				break;
+
+			SourceElement first = reader.next();
+
+			// End of file is reached before the closing curly bracket
+			if (first == null) {
+				throw new ParsingException("Unclosed namespace " + namespace);
 			}
-			
-			Set<Modifier> modifiers = new HashSet<Modifier>(1);
-			
-			// All modifiers should be declared before the type (if there are any)
-			while (Modifier.isModifier(typeName)) {
-				
-				// Don't allow duplicate modifiers
-				if (!modifiers.add(Modifier.getByWord(typeName))) {
-					throw new ParsingException("Duplicated modifier " + typeName);
+
+			if (first.getType() == SourceElementType.OPERATOR) {
+
+				// The namespace is being closed
+				if (first.getOperator() == Operator.CLOSE_BLOCK) {
+					break;
 				}
-				
-				typeName = reader.next();
-			}
-			
-			ElementType type = ElementTypes.getByName(typeName);
-			
-			// type names that do not have special meaning in source code will be treated as normal names
-			if (type == null || !type.shouldAppearInSource()) {
-				
-				// If the type is primitive, we can easily confirm it already
-				// If not, we will check for the declaration in a later stage
-				Type primitiveType = PrimitiveTypes.getByName(typeName);
-				TypeBuilder typeBuilder;
-				if (primitiveType == null) {
-					typeBuilder = new TypeBuilder(typeName);
-				} else {
-					typeBuilder = new TypeBuilder(primitiveType);
+
+				// No other operators are allowed at this position
+				else {
+					throw new ParsingException("Unexpected operator " + first.getOperator());
 				}
-				
-				// Read the name of the variable/function
-				String name = reader.next();
-				if (name == null) {
-					throw new ParsingException("The type " + typeName + " is not defined correctly");
-				}
-				
-				// If a function is being declared, the 'name' will contain the brackets and parameters
-				int indexLeftBracket = name.indexOf('(');
-				if (indexLeftBracket == -1) {
-					
-					// Should be followed by the equals sign
-					String equals = reader.next();
-					if (!"=".equals(equals)) {
-						throw new ParsingException("The variable " + name + " of type " + typeName + " is not declared correctly.");
+			} else if (first.getType() == SourceElementType.WORD) {
+
+				// This is probably the type of the element that is about to be declared
+				String typeName = first.getWord();
+
+				Set<Modifier> modifiers = new HashSet<Modifier>(1);
+
+				// All modifiers should be declared before the type (if there are any)
+				while (Modifier.isModifier(typeName)) {
+
+					// Don't allow duplicate modifiers
+					if (!modifiers.add(Modifier.getByWord(typeName))) {
+						throw new ParsingException("Duplicated modifier " + typeName);
 					}
-					
-					// Everything until the ';' should be the unparsed initial value
-					List<String> unparsedValueList = new ArrayList<String>();
-					String partOfValue = reader.next();
-					
-					if (partOfValue == null) {
-						throw new ParsingException("The end of file was reached before " + typeName + " " + name + " started its initial value");
+
+					SourceElement next = reader.next();
+
+					// Either a modifier or typename must be given
+					if (next.getType() == SourceElementType.WORD) {
+						typeName = next.getWord();
 					}
-					
-					while (!partOfValue.endsWith(";")) {
-						
-						unparsedValueList.add(partOfValue);
-						partOfValue = reader.next();
-						
-						// Throw a ParsingException instead of NullPointerException
-						if (partOfValue == null) {
-							throw new ParsingException("The variable " + name + " of type " + typeName + " has an unfinished intial value.");
+
+					// Nothing else
+					else {
+						throw new ParsingException("Unexpected " + next);
+					}
+				}
+
+				// Now that we have had all modifiers, the typeName variable must be the actual
+				// type name
+				ElementType type = ElementTypes.getByName(typeName);
+
+				// type names that do not have special meaning in source code will be treated as
+				// normal names
+				if (type == null || !type.shouldAppearInSource()) {
+
+					// If the type is primitive, we can easily confirm it already
+					// If not, we will check for the declaration in a later stage
+					Type primitiveType = PrimitiveTypes.getByName(typeName);
+					TypeBuilder typeBuilder;
+					if (primitiveType == null) {
+						typeBuilder = new TypeBuilder(typeName);
+					} else {
+						typeBuilder = new TypeBuilder(primitiveType);
+					}
+
+					// Read the name of the variable/function
+					SourceElement nameElement = reader.next();
+
+					// The name should be given and nothing else
+					if (nameElement.getType() == SourceElementType.WORD) {
+						String name = nameElement.getWord();
+						if (name == null) {
+							throw new ParsingException("The type " + typeName + " is not defined correctly");
 						}
+
+						// If a function is being declared, there will be brackets
+						// If not, there must be an '='
+						SourceElement maybeBracket = reader.next();
+						if (maybeBracket.getType() != SourceElementType.OPERATOR) {
+							throw new ParsingException("Expected '(' or '=', but found " + maybeBracket);
+						}
+						if (maybeBracket.getOperator() == Operator.EQUALS) {
+
+							// Should be followed by the equals sign and nothing else
+							SourceElement equalsElement = reader.next();
+							if (equalsElement.getType() == SourceElementType.OPERATOR) {
+
+								// Everything until the ';' should be the unparsed initial value
+								List<SourceElement> unparsedValueList = new ArrayList<SourceElement>();
+								SourceElement partOfValue = reader.next();
+
+								if (partOfValue == null) {
+									throw new ParsingException("The end of file was reached before " + typeName + " "
+											+ name + " started its initial value");
+								}
+
+								while (!(partOfValue.getType() == SourceElementType.OPERATOR && partOfValue.getOperator() == Operator.SEMICOLON)) {
+
+									unparsedValueList.add(partOfValue);
+									partOfValue = reader.next();
+
+									// Throw a ParsingException instead of NullPointerException
+									if (partOfValue == null) {
+										throw new ParsingException("The variable " + name + " of type " + typeName
+												+ " has an unfinished intial value.");
+									}
+								}
+
+								namespace.createVariable(name, typeBuilder, new ValueBuilder(unparsedValueList));
+							} else {
+								throw new ParsingException("The equal sign was expected, but got " + equalsElement);
+							}
+						} else if (maybeBracket.getOperator() == Operator.OPEN_BRACKET){
+
+							ParamsBuilder parameters = ParamsParser.parse(reader);
+
+							// TODO Parse function body
+							namespace.createFunction(name, typeBuilder, parameters, body);
+						}
+					} else {
+						throw new ParsingException("A name was expected, but got " + nameElement);
 					}
-					
-					String unparsedValue = ArrayHelper.concatenate(unparsedValueList);
-					
-					namespace.createVariable(name, typeBuilder, new ValueBuilder(unparsedValue));
 				} else {
-					
-					// This is a function, so lets gather the parameters
-					String params = name.substring(indexLeftBracket);
-					
-					List<String> paramsList = new ArrayList<String>();
-					while (!params.contains("{")) {
-						paramsList.add(params);
-						params = reader.next();
+					if (type.needsName()) {
+
+						// Observe that the name and opening curly bracket are read here
+						SourceElement nameElement = reader.next();
+						
+						if (nameElement == null) {
+							throw new ParsingException("Name of " + type + " was expected, but end of file was reached");
+						}
+						
+						if (nameElement.getType() != SourceElementType.WORD) {
+							throw new ParsingException("Name of " + type + " was expected, but found " + nameElement);
+						}
+						
+						
+						String name = nameElement.getWord();
+						SourceElement openCurly = reader.next();
+						
+						// All elements at this point must be defined with a { after the name
+						if (!(openCurly.getType() == SourceElementType.OPERATOR && openCurly.getOperator() == Operator.OPEN_BLOCK)) {
+							throw new ParsingException("Expected '{', but found " + openCurly);
+						}
+
+						// I hate switch
+						if (type == ElementTypes.NAMESPACE) {
+							parseNamespace(reader, app, namespace.createNamespace(name, modifiers));
+						} else if (type == ElementTypes.CLASS) {
+							// TODO parse class
+						} else if (type == ElementTypes.INTERFACE) {
+							throw new ParsingException("Interfaces are not high on my priority list");
+						} else if (type == ElementTypes.ENUM) {
+							// TODO parse enum
+						} else if (type == ElementTypes.INIT) {
+							// TODO parse code block and register init
+						} else if (type == ElementTypes.MAIN) {
+							// TODO parse code block and register main
+						} else {
+							throw new Error(
+									"Did I forget a named type that should be in source?" + type.getClass().getName());
+						}
+					} else {
+
+						// No name, so read the next curly bracket and start the parsing
+						SourceElement openCurly = reader.next();
+						
+						if (openCurly == null) {
+							throw new ParsingException("Expected '{', but end of file was reached instead");
+						}
+						
+						if (!(openCurly.getType() == SourceElementType.OPERATOR && openCurly.getOperator() == Operator.OPEN_BLOCK)) {
+							throw new ParsingException("Expected '{', but found " + openCurly);
+						}
+
+						// Ehm... well... I initially designed main and init not to have names, but I
+						// changed my mind and now all current element types have names
+
+						throw new ParsingException(
+								"All current types need names, but this type is " + type.getClass().getName());
 					}
-					
-					// It is possible that there is something right before the {
-					if (!params.startsWith("{")) {
-						paramsList.add(params.substring(0, params.indexOf('{')));
-					}
-					
-					// Observe that this includes the opening ( and the closing )
-					String fullParams = ArrayHelper.concatenate(paramsList);
-					
-					// This is the actual name, the previous name included a part of the parameters
-					name = name.substring(0, indexLeftBracket);
-					
-					ParamsBuilder parameters = ParamsParser.parse(fullParams);
-					
-					// TODO parse parameters and add the function to the namespace
 				}
 			} else {
-				if (type.needsName()) {
-					
-					// Observe that the name and opening curly bracket are read here
-					String name = reader.next();
-					String openCurly = reader.next();
-					if (name == null || !"{".equals(openCurly)) {
-						throw new ParsingException(typeName + " " + name + " is not defined correctly");
-					}
-					
-					// I hate switch
-					if (type == ElementTypes.NAMESPACE) {
-						parseNamespace(reader, app, namespace.createNamespace(name, modifiers));
-					} else if (type == ElementTypes.CLASS) {
-						// TODO parse class
-					} else if (type == ElementTypes.INTERFACE) {
-						throw new ParsingException("Interfaces are not high on my priority list");
-					} else if (type == ElementTypes.ENUM) {
-						// TODO parse enum
-					} else if (type == ElementTypes.INIT) {
-						// TODO parse code block and register init
-					} else if (type == ElementTypes.MAIN) {
-						// TODO parse code block and register main
-					} else {
-						throw new ParsingException("Did I forget a named type that should be in source?" + type.getClass().getName());
-					}
-				} else {
-					
-					// No name, so read the next curly bracket and start the parsing
-					String openCurly = reader.next();
-					if (!"{".equals(openCurly)) {
-						throw new ParsingException(typeName + " is not defined correctly");
-					}
-					
-					// Ehm... well... I initially designed main and init not to have names
-					
-					throw new ParsingException("All current types need names, but this type is " + type.getClass().getName());
-				}
+
+				// Strings are not allowed at this position
+				throw new ParsingException("Unexpected string ('" + first.getStringContent() + "')");
 			}
 		}
 	}

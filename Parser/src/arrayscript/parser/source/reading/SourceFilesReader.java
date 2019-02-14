@@ -15,5 +15,5 @@ public interface SourceFilesReader {
 	 * in the source folders have been read, this method returns null
 	 * @return A SourceFileReader for the next source file, or null if all source files have been read
 	 */
-	SourceFileReader1 next() throws IOException;
+	SourceFileReader next() throws IOException;
 }

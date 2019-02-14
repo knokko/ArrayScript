@@ -3,7 +3,9 @@ package arrayscript.parser.source.reading;
 import java.io.IOException;
 import java.util.Scanner;
 
-public class SimpleSourceFileReader1 implements SourceFileReader1 {
+import arrayscript.parser.util.ParsingException;
+
+class SimpleSourceFileReader1 implements SourceFileReader1 {
 
 	private static boolean isSeparator(char value) {
 		return Character.isWhitespace(value);
@@ -62,7 +64,7 @@ public class SimpleSourceFileReader1 implements SourceFileReader1 {
 	}
 
 	@Override
-	public String next() throws IOException {
+	public String next() throws IOException, ParsingException {
 		skipCurrentFileWhitespaces();
 
 		if (currentLine == null) {
@@ -86,7 +88,7 @@ public class SimpleSourceFileReader1 implements SourceFileReader1 {
 			}
 		}
 		if (endIndex == currentLine.length() && (inSingleString || inDoubleString)) {
-			throw new IOException("Unterminated string");
+			throw new ParsingException("Unterminated string");
 		}
 		String result = currentLine.substring(currentIndex, endIndex);
 		currentIndex = endIndex + 1;
