@@ -10,8 +10,6 @@ import arrayscript.lang.Modifier;
 import arrayscript.lang.Operator;
 import arrayscript.lang.element.ElementType;
 import arrayscript.lang.element.ElementTypes;
-import arrayscript.lang.var.type.PrimitiveTypes;
-import arrayscript.lang.var.type.Type;
 import arrayscript.parser.builder.AppBuilder;
 import arrayscript.parser.builder.NamespaceBuilder;
 import arrayscript.parser.builder.param.ParamsBuilder;
@@ -63,128 +61,52 @@ public class NamespaceParser {
 				}
 			} else if (first.isWord() || first.isKeyword()) {
 
-				// This is probably the type of the element that is about to be declared
-				String typeName = first.getWord();
-				
-				// TODO Rewrite this part!
-
+				// Eventual modifiers will come before the type
 				Set<Modifier> modifiers = new HashSet<Modifier>(1);
 
+				// It would be confusing to use first in the while loop
+				SourceElement next = first;
+
 				// All modifiers should be declared before the type (if there are any)
-				while (Modifier.isModifier(typeName)) {
+				while (next.isKeyword() && next.getKeyword().isModifier()) {
 
 					// Don't allow duplicate modifiers
-					if (!modifiers.add(Modifier.getByWord(typeName))) {
-						throw new ParsingException("Duplicated modifier " + typeName);
+					if (!modifiers.add(next.getKeyword().getModifier())) {
+						throw new ParsingException("Duplicated modifier " + next);
 					}
 
-					SourceElement next = reader.next();
+					next = reader.next();
 
-					// Either a modifier or typename must be given
-					if (next.isWord()) {
-						typeName = next.getWord();
-					}
-
-					// Nothing else
-					else {
-						throw new ParsingException("Unexpected " + next);
+					if (next == null) {
+						throw new ParsingException("Expected modifier or typename, but end of file was reached");
 					}
 				}
 
-				// Now that we have had all modifiers, the typeName variable must be the actual
-				// type name
-				ElementType type = ElementTypes.getByName(typeName);
+				// Now that we have had all modifiers, the next source element must be the type
+				SourceElement typeElement = next;
 
-				// type names that do not have special meaning in source code will be treated as
-				// normal names
-				if (type == null || !type.shouldAppearInSource()) {
+				// Distinguish between element types (class, namespace...) and variable types
+				// (string,number)
+				if (typeElement.isKeyword() && typeElement.getKeyword().isElementType()) {
+					ElementType type = typeElement.getKeyword().getElementType();
 
-					// If the type is primitive, we can easily confirm it already
-					// If not, we will check for the declaration in a later stage
-					Type primitiveType = PrimitiveTypes.getByName(typeName);
-					TypeBuilder typeBuilder;
-					if (primitiveType == null) {
-						typeBuilder = new TypeBuilder(typeName);
-					} else {
-						typeBuilder = new TypeBuilder(primitiveType);
-					}
-
-					// Read the name of the variable/function
-					SourceElement nameElement = reader.next();
-
-					// The name should be given and nothing else
-					if (nameElement.isWord()) {
-						String name = nameElement.getWord();
-						if (name == null) {
-							throw new ParsingException("The type " + typeName + " is not defined correctly");
-						}
-
-						// If a function is being declared, there will be brackets
-						// If not, there must be an '='
-						SourceElement maybeBracket = reader.next();
-						if (!maybeBracket.isOperator()) {
-							throw new ParsingException("Expected '(' or '=', but found " + maybeBracket);
-						}
-						if (maybeBracket.getOperator() == Operator.EQUALS) {
-
-							// Should be followed by the equals sign and nothing else
-							SourceElement equalsElement = reader.next();
-							if (equalsElement.isOperator()) {
-
-								// Everything until the ';' should be the unparsed initial value
-								List<SourceElement> unparsedValueList = new ArrayList<SourceElement>();
-								SourceElement partOfValue = reader.next();
-
-								if (partOfValue == null) {
-									throw new ParsingException("The end of file was reached before " + typeName + " "
-											+ name + " started its initial value");
-								}
-
-								while (!(partOfValue.isOperator() && partOfValue.getOperator() == Operator.SEMICOLON)) {
-
-									unparsedValueList.add(partOfValue);
-									partOfValue = reader.next();
-
-									// Throw a ParsingException instead of NullPointerException
-									if (partOfValue == null) {
-										throw new ParsingException("The variable " + name + " of type " + typeName
-												+ " has an unfinished intial value.");
-									}
-								}
-
-								namespace.createVariable(name, typeBuilder, new ValueBuilder(unparsedValueList));
-							} else {
-								throw new ParsingException("The equal sign was expected, but got " + equalsElement);
-							}
-						} else if (maybeBracket.getOperator() == Operator.OPEN_BRACKET){
-							
-							// Read the initial parameters and body
-							ParamsBuilder parameters = ParamsParser.parse(reader);
-							List<SourceElement> body = ExecutableParser.parseInitial(reader);
-
-							namespace.createFunction(name, typeBuilder, parameters, body);
-						}
-					} else {
-						throw new ParsingException("A name was expected, but got " + nameElement);
-					}
-				} else {
 					if (type.needsName()) {
 
 						// Observe that the name and opening curly bracket are read here
 						SourceElement nameElement = reader.next();
-						
+
 						if (nameElement == null) {
-							throw new ParsingException("Name of " + type + " was expected, but end of file was reached");
+							throw new ParsingException(
+									"Name of " + type + " was expected, but end of file was reached");
 						}
-						
+
 						if (!nameElement.isWord()) {
 							throw new ParsingException("Name of " + type + " was expected, but found " + nameElement);
 						}
-						
-						
+
 						String name = nameElement.getWord();
 						SourceElement openCurly = reader.next();
-						
+
 						// All elements at this point must be defined with a { after the name
 						if (!(openCurly.isOperator() && openCurly.getOperator() == Operator.OPEN_BLOCK)) {
 							throw new ParsingException("Expected '{', but found " + openCurly);
@@ -211,11 +133,11 @@ public class NamespaceParser {
 
 						// No name, so read the next curly bracket and start the parsing
 						SourceElement openCurly = reader.next();
-						
+
 						if (openCurly == null) {
 							throw new ParsingException("Expected '{', but end of file was reached instead");
 						}
-						
+
 						if (!(openCurly.isOperator() && openCurly.getOperator() == Operator.OPEN_BLOCK)) {
 							throw new ParsingException("Expected '{', but found " + openCurly);
 						}
@@ -225,6 +147,86 @@ public class NamespaceParser {
 
 						throw new ParsingException(
 								"All current types need names, but this type is " + type.getClass().getName());
+					}
+				} else {
+					// If the type is primitive, we can easily confirm it already
+					// If not, we will check for the declaration in a later stage
+					TypeBuilder typeBuilder;
+					if (typeElement.isKeyword()) {
+						if (typeElement.getKeyword().isType()) {
+							typeBuilder = new TypeBuilder(typeElement.getKeyword().getPrimitiveType());
+						} else {
+							throw new ParsingException("Expected a type name, but found " + typeElement);
+						}
+					} else if (typeElement.isWord()) {
+						typeBuilder = new TypeBuilder(typeElement.getWord());
+					} else {
+						throw new ParsingException("Expected a type name, but found " + typeElement);
+					}
+
+					// Read the name of the variable/function
+					SourceElement nameElement = reader.next();
+
+					// The name should be given and nothing else
+					if (nameElement.isWord()) {
+						String name = nameElement.getWord();
+						if (name == null) {
+							throw new ParsingException(
+									"The type " + typeBuilder.getTypeName() + " is not defined correctly");
+						}
+
+						// If a function is being declared, there will be brackets
+						// If not, there must be an '='
+						SourceElement maybeBracket = reader.next();
+						if (!maybeBracket.isOperator()) {
+							throw new ParsingException("Expected '(' or '=', but found " + maybeBracket);
+						}
+						if (maybeBracket.getOperator() == Operator.EQUALS) {
+
+							// Should be followed by the equals sign and nothing else
+							SourceElement equalsElement = reader.next();
+							if (equalsElement.isOperator()) {
+
+								// Everything until the ';' should be the unparsed initial value
+								List<SourceElement> unparsedValueList = new ArrayList<SourceElement>();
+
+								// Breaking upon reaching semicolon is more convenient than a loop condition
+								while (true) {
+									SourceElement partOfValue = reader.next();
+
+									// Throw a ParsingException instead of NullPointerException
+									if (partOfValue == null) {
+										throw new ParsingException("The variable " + name + " of type "
+												+ typeBuilder.getTypeName() + " has an unfinished intial value.");
+									}
+
+									// The semicolon defines the end of the initial value.
+									// Intentionally don't add it to the unparsedValueList
+									if (partOfValue.isOperator() && partOfValue.getOperator() == Operator.SEMICOLON) {
+										break;
+									}
+
+									unparsedValueList.add(partOfValue);
+								}
+
+								namespace.createVariable(name, typeBuilder, new ValueBuilder(unparsedValueList));
+							} else {
+								throw new ParsingException("The equal sign was expected, but got " + equalsElement);
+							}
+						} else if (maybeBracket.getOperator() == Operator.OPEN_BRACKET) {
+
+							// Read the initial parameters and body
+							ParamsBuilder parameters = ParamsParser.parse(reader);
+							List<SourceElement> body = ExecutableParser.parseInitial(reader);
+
+							namespace.createFunction(name, typeBuilder, parameters, body);
+						} else {
+
+							// Either ( to declare function or = to declare the value
+							throw new ParsingException("Expected '(' or '=', but found " + maybeBracket);
+						}
+					} else {
+						throw new ParsingException("A name was expected, but got " + nameElement);
 					}
 				}
 			} else {

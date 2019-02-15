@@ -1,6 +1,8 @@
 package arrayscript.lang;
 
 import arrayscript.lang.var.type.Type;
+import arrayscript.lang.element.ElementType;
+import arrayscript.lang.element.ElementTypes;
 import arrayscript.lang.var.type.PrimitiveTypes;
 
 /**
@@ -14,60 +16,68 @@ public enum Keyword {
 	/*
 	 * Keywords to define something.
 	 */
-	NAMESPACE(null, null),
-	CLASS(null, null),
-	INTERFACE(null, null),
-	ENUM(null, null),
-	INIT(null, null),
-	MAIN(null, null),
+	NAMESPACE(null, null, ElementTypes.NAMESPACE),
+	CLASS(null, null, ElementTypes.CLASS),
+	INTERFACE(null, null, ElementTypes.INTERFACE),
+	ENUM(null, null, ElementTypes.ENUM),
+	INIT(null, null, ElementTypes.INIT),
+	MAIN(null, null, ElementTypes.MAIN),
 	
 	/*
 	 * Class-related keywords
 	 */
-	STATIC(Modifier.STATIC, null),
-	CONSTRUCTOR(null, null),
-	GETTER(null, null),
-	SETTER(null, null),
+	STATIC(Modifier.STATIC, null, null),
+	CONSTRUCTOR(null, null, null),
+	GETTER(null, null, null),
+	SETTER(null, null, null),
+	
+	// TODO maybe assign element types to constructor, getter and setter
 	
 	
 	/*
 	 * Variable types
 	 */
-	ANY(null, PrimitiveTypes.ANY),
-	BOOLEAN(null, PrimitiveTypes.BOOLEAN),
-	NUMBER(null, PrimitiveTypes.NUMBER),
-	STRING(null, PrimitiveTypes.STRING),
-	FUNCTION(null, PrimitiveTypes.FUNCTION),
-	INT8(null, PrimitiveTypes.INT8),
-	INT16(null, PrimitiveTypes.INT16),
-	INT32(null, PrimitiveTypes.INT32),
-	UINT8(null, PrimitiveTypes.UINT8),
-	UINT16(null, PrimitiveTypes.UINT16),
-	UINT32(null, PrimitiveTypes.UINT32),
+	ANY(null, PrimitiveTypes.ANY, null),
+	BOOLEAN(null, PrimitiveTypes.BOOLEAN, null),
+	NUMBER(null, PrimitiveTypes.NUMBER, null),
+	STRING(null, PrimitiveTypes.STRING, null),
+	FUNCTION(null, PrimitiveTypes.FUNCTION, null),
+	INT8(null, PrimitiveTypes.INT8, null),
+	INT16(null, PrimitiveTypes.INT16, null),
+	INT32(null, PrimitiveTypes.INT32, null),
+	UINT8(null, PrimitiveTypes.UINT8, null),
+	UINT16(null, PrimitiveTypes.UINT16, null),
+	UINT32(null, PrimitiveTypes.UINT32, null),
 	
 	/*
 	 * Modifiers
 	 */
-	CONST(Modifier.CONST, null),
-	DEFINE(Modifier.DEFINE, null),
-	OPEN(Modifier.OPEN, null),
-	CLOSED(Modifier.CLOSED, null),
+	CONST(Modifier.CONST, null, null),
+	DEFINE(Modifier.DEFINE, null, null),
+	OPEN(Modifier.OPEN, null, null),
+	CLOSED(Modifier.CLOSED, null, null),
 	
 	/*
 	 * Other
 	 */
-	SCOPE(null, null);
+	SCOPE(null, null, null);
 	
 	private final Modifier modifier;
 	private final Type primitiveType;
+	private final ElementType elementType;
 	
-	Keyword(Modifier modifier, Type primitiveType){
+	Keyword(Modifier modifier, Type primitiveType, ElementType elementType){
 		this.modifier = modifier;
 		
-		if (!primitiveType.isPrimitive()) {
+		if (primitiveType != null && !primitiveType.isPrimitive()) {
 			throw new IllegalArgumentException("The provided primitive type should be primitive");
 		}
 		this.primitiveType = primitiveType;
+		
+		if (elementType != null && !elementType.shouldAppearInSource()) {
+			throw new IllegalArgumentException("The element type " + elementType + " should not appear in source code");
+		}
+		this.elementType = elementType;
 	}
 	
 	/**
@@ -80,10 +90,18 @@ public enum Keyword {
 	
 	/**
 	 * Determines whether this keyword is a primitive type, or not
-	 * @return the if this keyword is a primitive type, false otherwise
+	 * @return true if this keyword is a primitive type, false otherwise
 	 */
 	public boolean isType() {
 		return primitiveType != null;
+	}
+	
+	/**
+	 * Determines whether this keyword is an element type, or not
+	 * @return true if this keyword is an element type, false otherwise
+	 */
+	public boolean isElementType() {
+		return elementType != null;
 	}
 	
 	/**
@@ -110,5 +128,18 @@ public enum Keyword {
 			throw new UnsupportedOperationException("This keyword (" + name() + ") is not a keyword");
 		}
 		return primitiveType;
+	}
+	
+	/**
+	 * Gets the element type that belongs to this keyword. If this keyword is not an element type, an
+	 * UnsupportedOperationException will be thrown.
+	 * @return The element type that belongs to this keyword
+	 * @throws UnsupportedOperationException If this keyword is not an element type
+	 */
+	public ElementType getElementType() throws UnsupportedOperationException {
+		if (elementType == null) {
+			throw new UnsupportedOperationException("This keyword (" + name() + ") is not an element type");
+		}
+		return elementType;
 	}
 }
