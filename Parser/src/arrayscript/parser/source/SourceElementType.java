@@ -15,6 +15,12 @@ public enum SourceElementType {
 	WORD,
 	
 	/**
+	 * Keywords are words that are reserved by the language and have a special meaning. Programmers are not
+	 * allowed to use keywords as names for types or variables.
+	 */
+	KEYWORD,
+	
+	/**
 	 * Strings are source elements that are written between "s and 's. Strings are distinguished early by the
 	 * parser because the parser so that it can safely ignore the content of the string and thus will not be
 	 * confused by whatever is in the string.

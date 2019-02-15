@@ -6,7 +6,7 @@ package arrayscript.lang;
  * @author knokko
  *
  */
-public enum Keywords {
+public enum Keyword {
 	
 	/*
 	 * Keywords to define something.

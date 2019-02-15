@@ -57,7 +57,7 @@ public class SourceFolderReader implements SourceFilesReader {
 	public SourceFileReader next() throws IOException {
 		Scanner nextScanner = findNextScanner();
 		if (nextScanner != null) {
-			return new SimpleSourceFileReader(new DefaultSourceFileReader3(new DefaultSourceFileReader2(new SimpleSourceFileReader1(nextScanner))));
+			return new DefaultSourceFileReader(new SourceFileReader1(nextScanner));
 		} else {
 			return null;
 		}

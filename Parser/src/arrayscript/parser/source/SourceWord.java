@@ -1,5 +1,6 @@
 package arrayscript.parser.source;
 
+import arrayscript.lang.Keyword;
 import arrayscript.lang.Operator;
 
 public class SourceWord implements SourceElement {
@@ -33,5 +34,10 @@ public class SourceWord implements SourceElement {
 	@Override
 	public String toString() {
 		return word;
+	}
+
+	@Override
+	public Keyword getKeyword() throws UnsupportedOperationException {
+		throw new UnsupportedOperationException("This is not a keyword, but a normal word");
 	}
 }
