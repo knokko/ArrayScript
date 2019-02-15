@@ -38,7 +38,18 @@ public enum Modifier {
 	 * or function can be accessed without the need for an instance of the given class. Static elements in a
 	 * class act the same as 'normal' elements in a namespace.
 	 */
-	STATIC;
+	STATIC,
+	
+	/**
+	 * Namespaces can be declared open. Open namespaces can be expanded in another file. So you don't
+	 * necessarily need a massive source file for a massive namespace.
+	 */
+	OPEN,
+	
+	/**
+	 * I forgot what this was for
+	 */
+	CLOSED;
 	
 	private static final String[] LOWERCASE;
 	

@@ -61,10 +61,12 @@ public class NamespaceParser {
 				else {
 					throw new ParsingException("Unexpected operator " + first.getOperator());
 				}
-			} else if (first.isWord()) {
+			} else if (first.isWord() || first.isKeyword()) {
 
 				// This is probably the type of the element that is about to be declared
 				String typeName = first.getWord();
+				
+				// TODO Rewrite this part!
 
 				Set<Modifier> modifiers = new HashSet<Modifier>(1);
 

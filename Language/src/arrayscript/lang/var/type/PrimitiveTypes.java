@@ -8,6 +8,15 @@ public class PrimitiveTypes {
 	
 	public static final TypeAny ANY = new TypeAny();
 	public static final TypeBoolean BOOLEAN = new TypeBoolean();
+	public static final TypeNumber NUMBER = new TypeNumber();
+	public static final TypeString STRING = new TypeString();
+	public static final TypeFunction FUNCTION = new TypeFunction();
+	public static final TypeInt8 INT8 = new TypeInt8();
+	public static final TypeInt16 INT16 = new TypeInt16();
+	public static final TypeInt32 INT32 = new TypeInt32();
+	public static final TypeUInt8 UINT8 = new TypeUInt8();
+	public static final TypeUInt16 UINT16 = new TypeUInt16();
+	public static final TypeUInt32 UINT32 = new TypeUInt32();
 	
 	private static final Map<String,Type> NAME_MAP;
 	
