@@ -18,7 +18,6 @@ import arrayscript.parser.builder.param.ParamsBuilder;
 import arrayscript.parser.builder.var.type.TypeBuilder;
 import arrayscript.parser.builder.var.value.ValueBuilder;
 import arrayscript.parser.source.SourceElement;
-import arrayscript.parser.source.SourceElementType;
 import arrayscript.parser.source.reading.SourceFileReader;
 import arrayscript.parser.util.ParsingException;
 
@@ -51,7 +50,7 @@ public class NamespaceParser {
 				throw new ParsingException("Unclosed namespace " + namespace);
 			}
 
-			if (first.getType() == SourceElementType.OPERATOR) {
+			if (first.isOperator()) {
 
 				// The namespace is being closed
 				if (first.getOperator() == Operator.CLOSE_BLOCK) {
@@ -62,7 +61,7 @@ public class NamespaceParser {
 				else {
 					throw new ParsingException("Unexpected operator " + first.getOperator());
 				}
-			} else if (first.getType() == SourceElementType.WORD) {
+			} else if (first.isWord()) {
 
 				// This is probably the type of the element that is about to be declared
 				String typeName = first.getWord();
@@ -80,7 +79,7 @@ public class NamespaceParser {
 					SourceElement next = reader.next();
 
 					// Either a modifier or typename must be given
-					if (next.getType() == SourceElementType.WORD) {
+					if (next.isWord()) {
 						typeName = next.getWord();
 					}
 
@@ -112,7 +111,7 @@ public class NamespaceParser {
 					SourceElement nameElement = reader.next();
 
 					// The name should be given and nothing else
-					if (nameElement.getType() == SourceElementType.WORD) {
+					if (nameElement.isWord()) {
 						String name = nameElement.getWord();
 						if (name == null) {
 							throw new ParsingException("The type " + typeName + " is not defined correctly");
@@ -121,14 +120,14 @@ public class NamespaceParser {
 						// If a function is being declared, there will be brackets
 						// If not, there must be an '='
 						SourceElement maybeBracket = reader.next();
-						if (maybeBracket.getType() != SourceElementType.OPERATOR) {
+						if (!maybeBracket.isOperator()) {
 							throw new ParsingException("Expected '(' or '=', but found " + maybeBracket);
 						}
 						if (maybeBracket.getOperator() == Operator.EQUALS) {
 
 							// Should be followed by the equals sign and nothing else
 							SourceElement equalsElement = reader.next();
-							if (equalsElement.getType() == SourceElementType.OPERATOR) {
+							if (equalsElement.isOperator()) {
 
 								// Everything until the ';' should be the unparsed initial value
 								List<SourceElement> unparsedValueList = new ArrayList<SourceElement>();
@@ -139,7 +138,7 @@ public class NamespaceParser {
 											+ name + " started its initial value");
 								}
 
-								while (!(partOfValue.getType() == SourceElementType.OPERATOR && partOfValue.getOperator() == Operator.SEMICOLON)) {
+								while (!(partOfValue.isOperator() && partOfValue.getOperator() == Operator.SEMICOLON)) {
 
 									unparsedValueList.add(partOfValue);
 									partOfValue = reader.next();
@@ -176,7 +175,7 @@ public class NamespaceParser {
 							throw new ParsingException("Name of " + type + " was expected, but end of file was reached");
 						}
 						
-						if (nameElement.getType() != SourceElementType.WORD) {
+						if (!nameElement.isWord()) {
 							throw new ParsingException("Name of " + type + " was expected, but found " + nameElement);
 						}
 						
@@ -185,7 +184,7 @@ public class NamespaceParser {
 						SourceElement openCurly = reader.next();
 						
 						// All elements at this point must be defined with a { after the name
-						if (!(openCurly.getType() == SourceElementType.OPERATOR && openCurly.getOperator() == Operator.OPEN_BLOCK)) {
+						if (!(openCurly.isOperator() && openCurly.getOperator() == Operator.OPEN_BLOCK)) {
 							throw new ParsingException("Expected '{', but found " + openCurly);
 						}
 
@@ -215,7 +214,7 @@ public class NamespaceParser {
 							throw new ParsingException("Expected '{', but end of file was reached instead");
 						}
 						
-						if (!(openCurly.getType() == SourceElementType.OPERATOR && openCurly.getOperator() == Operator.OPEN_BLOCK)) {
+						if (!(openCurly.isOperator() && openCurly.getOperator() == Operator.OPEN_BLOCK)) {
 							throw new ParsingException("Expected '{', but found " + openCurly);
 						}
 

@@ -6,7 +6,6 @@ import java.util.List;
 
 import arrayscript.lang.Operator;
 import arrayscript.parser.source.SourceElement;
-import arrayscript.parser.source.SourceElementType;
 import arrayscript.parser.source.reading.SourceFileReader;
 import arrayscript.parser.util.ParsingException;
 
@@ -43,7 +42,7 @@ public class ExecutableParser {
 			}
 			
 			// Check if a block is being closed
-			if (next.getType() == SourceElementType.OPERATOR && next.getOperator() == Operator.CLOSE_BLOCK) {
+			if (next.isOperator() && next.getOperator() == Operator.CLOSE_BLOCK) {
 				
 				// If depth is larger than 0, we just close a sub-block we opened in the code block
 				if (depth > 0) {
@@ -57,7 +56,7 @@ public class ExecutableParser {
 			}
 			
 			// Check if a sub-block is being opened
-			if (next.getType() == SourceElementType.OPERATOR && next.getOperator() == Operator.OPEN_BLOCK) {
+			if (next.isOperator() && next.getOperator() == Operator.OPEN_BLOCK) {
 				depth++;
 			}
 			

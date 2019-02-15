@@ -4,7 +4,6 @@ import java.io.IOException;
 
 import arrayscript.lang.Operator;
 import arrayscript.parser.source.SourceElement;
-import arrayscript.parser.source.SourceElementType;
 import arrayscript.parser.source.SourceOperator;
 import arrayscript.parser.source.SourceWord;
 import arrayscript.parser.util.ParsingException;
@@ -34,7 +33,7 @@ class DefaultSourceFileReader3 implements SourceFileReader3 {
 			}
 			
 			// Don't do anything with strings
-			if (next.getType() == SourceElementType.STRING) {
+			if (next.isString()) {
 				return next;
 			}
 			

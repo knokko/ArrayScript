@@ -8,7 +8,6 @@ import arrayscript.lang.Operator;
 import arrayscript.parser.builder.param.ParamBuilder;
 import arrayscript.parser.builder.param.ParamsBuilder;
 import arrayscript.parser.source.SourceElement;
-import arrayscript.parser.source.SourceElementType;
 import arrayscript.parser.source.reading.SourceFileReader;
 import arrayscript.parser.util.ParsingException;
 
@@ -36,7 +35,7 @@ public class ParamsParser {
 				throw new ParsingException("Unfinished parameters");
 			}
 			
-			if (first.getType() == SourceElementType.OPERATOR) {
+			if (first.isOperator()) {
 				
 				// No commas are allowed at this point, only closing brackets
 				// Note that this should only occur if there are no parameters
@@ -45,7 +44,7 @@ public class ParamsParser {
 				} else {
 					throw new ParsingException("Unexpected " + first);
 				}
-			} else if (first.getType() == SourceElementType.WORD){
+			} else if (first.isWord()){
 				
 				// The first must be the type name
 				SourceElement second = reader.next();
@@ -55,7 +54,7 @@ public class ParamsParser {
 				}
 				
 				// The second must be the parameter name
-				if (second.getType() == SourceElementType.WORD) {
+				if (second.isWord()) {
 					
 					SourceElement third = reader.next();
 					
@@ -65,7 +64,7 @@ public class ParamsParser {
 					
 					// The next should be either a ',' to indicate another parameter or a ')' to indicate
 					// the end of the parameters.
-					if (third.getType() == SourceElementType.OPERATOR) {
+					if (third.isOperator()) {
 						
 						// Add the parameter to the list and either continue or terminate the loop
 						paramList.add(new ParamBuilder(first.getWord(), second.getWord()));

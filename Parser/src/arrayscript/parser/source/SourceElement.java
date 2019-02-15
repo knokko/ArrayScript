@@ -17,6 +17,30 @@ public interface SourceElement {
 	SourceElementType getType();
 	
 	/**
+	 * Determines whether this source element is a word, or not.
+	 * @return true if and only if the type of this source element is SourceElementType.WORD
+	 */
+	default boolean isWord() {
+		return getType() == SourceElementType.WORD;
+	}
+	
+	/**
+	 * Determines whether this source element is a string, or not.
+	 * @return true if and only if the type of this source element is SourceElementType.STRING
+	 */
+	default boolean isString() {
+		return getType() == SourceElementType.STRING;
+	}
+	
+	/**
+	 * Determines whether this source element is an operator, or not.
+	 * @return true if and only if the type of this source element is SourceElementType.OPERATOR
+	 */
+	default boolean isOperator() {
+		return getType() == SourceElementType.OPERATOR;
+	}
+	
+	/**
 	 * Use this method to get the operator that this source element represents after you checked that
 	 * getType() returns SourceElementType.OPERATOR.
 	 * @return The operator if this source element represents an operator
