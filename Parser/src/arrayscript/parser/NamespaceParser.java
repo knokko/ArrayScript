@@ -21,7 +21,6 @@ import arrayscript.parser.source.SourceElement;
 import arrayscript.parser.source.SourceElementType;
 import arrayscript.parser.source.reading.SourceFileReader;
 import arrayscript.parser.util.ParsingException;
-import arrayscript.util.ArrayHelper;
 
 public class NamespaceParser {
 
@@ -157,10 +156,11 @@ public class NamespaceParser {
 								throw new ParsingException("The equal sign was expected, but got " + equalsElement);
 							}
 						} else if (maybeBracket.getOperator() == Operator.OPEN_BRACKET){
-
+							
+							// Read the initial parameters and body
 							ParamsBuilder parameters = ParamsParser.parse(reader);
+							List<SourceElement> body = ExecutableParser.parseInitial(reader);
 
-							// TODO Parse function body
 							namespace.createFunction(name, typeBuilder, parameters, body);
 						}
 					} else {

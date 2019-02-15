@@ -1,15 +1,18 @@
 package arrayscript.parser.executable;
 
+import java.util.List;
+
 import arrayscript.lang.element.Namespace;
 import arrayscript.lang.executable.Executable;
 import arrayscript.parser.builder.AppBuilder;
+import arrayscript.parser.source.SourceElement;
 
 public class ExecutableBuilder {
 	
-	private final String unparsedExecutable;
+	private final List<SourceElement> unparsedExecutable;
 	private Executable executable;
 	
-	public ExecutableBuilder(String unparsed) {
+	public ExecutableBuilder(List<SourceElement> unparsed) {
 		unparsedExecutable = unparsed;
 	}
 	
