@@ -66,7 +66,7 @@ class SourceFileReader3 {
 		Operator closestOperator = null;
 		
 		// Search for the closest operator
-		if (currentWordIndex < currentWord.length() - 1) {
+		if (currentWordIndex < currentWord.length()) {
 			for (Operator operator : OPERATORS) {
 				
 				int index = currentWord.indexOf(operator.getTokens(), currentWordIndex);

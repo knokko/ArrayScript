@@ -1,5 +1,6 @@
 package arrayscript.parser.builder;
 
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -271,5 +272,72 @@ public class NamespaceBuilder implements ElementBuilder {
 			}
 		}
 		return null;
+	}
+	
+	public void printTest1(PrintStream out, int indentLevel) {
+		out.println();
+		for (NamespaceBuilder namespace : namespaces) {
+			printTest1(out, indentLevel, "namespace " + collectionToString(namespace.modifiers) + " " + namespace.name + " {");
+			namespace.printTest1(out, indentLevel + 1);
+			printTest1(out, indentLevel, "}");
+			out.println();
+		}
+		for (ClassBuilder cb : classes) {
+			printTest1(out, indentLevel, "class " + cb.getName() + "{");
+			// TODO expand class builders
+			printTest1(out, indentLevel, "}");
+			out.println();
+		}
+		for (VariableBuilder variable : variables) {
+			printTest1(out, indentLevel, variable.getType().getTypeName() + " " + variable.getName() + " = ... ;");
+			out.println();
+		}
+		for (FunctionBuilder function : functions) {
+			printTest1(out, indentLevel, function.getReturnType().getTypeName() + " " + function.getName() + "( ... ) {");
+			// TODO expand function body
+			printTest1(out, indentLevel, "}");
+			out.println();
+		}
+		for (InitBuilder init : inits) {
+			printTest1(out, indentLevel, "init " + init.getName() + ";");
+			out.println();
+		}
+		for (MainBuilder main : mains) {
+			printTest1(out, indentLevel, "main " + main.getName() + ";");
+		}
+		out.println();
+	}
+	
+	private void printTest1(PrintStream out, int indentLevel, String message) {
+		for (int counter = 0; counter < indentLevel; counter++) {
+			out.print("    ");
+		}
+		out.println(message);
+	}
+	
+	private String collectionToString(Collection<? extends Object> collection) {
+		if (collection.isEmpty()) {
+			return "";
+		}
+		String[] strings = new String[collection.size()];
+		int size = 0;
+		int index = 0;
+		for (Object next : collection) {
+			strings[index] = next.toString();
+			
+			// for the whitespace between the elements
+			size += strings[index].length() + 1;
+			index++;
+		}
+		
+		// The last element doesn't need a whitespace at the end
+		size--;
+		StringBuilder builder = new StringBuilder(size);
+		for (index = 0; index < strings.length - 1; index++) {
+			builder.append(strings[index]);
+			builder.append(' ');
+		}
+		builder.append(strings[strings.length - 1]);
+		return builder.toString();
 	}
 }

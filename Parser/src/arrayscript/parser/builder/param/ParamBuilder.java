@@ -13,6 +13,11 @@ public class ParamBuilder {
 		this.type = new TypeBuilder(typeName);
 	}
 	
+	public ParamBuilder(TypeBuilder type, String name) {
+		this.type = type;
+		this.name = name;
+	}
+	
 	public String getName() {
 		return name;
 	}

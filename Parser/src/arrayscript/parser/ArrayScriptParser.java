@@ -29,7 +29,12 @@ public class ArrayScriptParser {
 				processSourceFile(reader, application);
 				reader = sourceFiles.next();
 			}
-			return application.build();
+			
+			// TODO remove after testing
+			application.printTest1(System.out);
+			return null;
+			// TODO remove until here
+			//return application.build();
 		} catch (IOException ioex) {
 			throw new ParsingException("An IO error occured", ioex);
 		}

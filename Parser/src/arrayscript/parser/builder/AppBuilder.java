@@ -1,5 +1,6 @@
 package arrayscript.parser.builder;
 
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -67,5 +68,21 @@ public class AppBuilder {
 		}
 		
 		mains.add(main);
+	}
+	
+	public void printTest1(PrintStream out) {
+		out.println("AppBuilder");
+		out.println("Mains:");
+		for (MainBuilder main : mains) {
+			out.println("    " + main.getName());
+		}
+		out.println();
+		out.println("Inits:");
+		for (InitBuilder init : inits) {
+			out.println("    " + init.getName());
+		}
+		out.println();
+		out.println("Global namespace:");
+		globalNamespace.printTest1(out, 0);
 	}
 }

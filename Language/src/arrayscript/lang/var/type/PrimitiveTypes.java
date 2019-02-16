@@ -24,7 +24,7 @@ public class PrimitiveTypes {
 		Field[] fields = PrimitiveTypes.class.getDeclaredFields();
 		NAME_MAP = new HashMap<String,Type>(fields.length - 1);
 		for (Field field : fields) {
-			if (field.getType() != HashMap.class) {
+			if (field.getType() != Map.class) {
 				try {
 					Type type = (Type) field.get(null);
 					NAME_MAP.put(type.getName(), type);

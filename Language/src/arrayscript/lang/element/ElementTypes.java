@@ -67,7 +67,7 @@ public class ElementTypes {
 		NAME_MAP = new HashMap<String,ElementType>(fields.length - 1);
 		for (Field field : fields) {
 			try {
-				if (field.getType() != HashMap.class) {
+				if (field.getType() != Map.class) {
 					ElementType type = (ElementType) field.get(null);
 					NAME_MAP.put(type.getName(), type);
 				}

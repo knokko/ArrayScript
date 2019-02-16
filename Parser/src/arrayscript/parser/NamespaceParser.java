@@ -45,7 +45,13 @@ public class NamespaceParser {
 
 			// End of file is reached before the closing curly bracket
 			if (first == null) {
-				throw new ParsingException("Unclosed namespace " + namespace);
+				
+				// The global namespace can not be closed explicitly and can be continued in the next file
+				if (namespace.isGlobal()) {
+					return;
+				} else {
+					throw new ParsingException("Unclosed namespace " + namespace);
+				}
 			}
 
 			if (first.isOperator()) {
@@ -122,9 +128,12 @@ public class NamespaceParser {
 						} else if (type == ElementTypes.ENUM) {
 							throw new ParsingException("Enums will be added in a later version");
 						} else if (type == ElementTypes.INIT) {
-							app.registerInit(namespace.createInit(modifiers, name, ExecutableParser.parseInitial(reader)));
+							app.registerInit(
+									namespace.createInit(modifiers, name, ExecutableParser.parseInitial(reader)));
 						} else if (type == ElementTypes.MAIN) {
-							app.registerMain(namespace.createMain(modifiers, name, ExecutableParser.parseInitial(reader)));;
+							app.registerMain(
+									namespace.createMain(modifiers, name, ExecutableParser.parseInitial(reader)));
+							;
 						} else {
 							throw new Error(
 									"Did I forget a named type that should be in source?" + type.getClass().getName());
@@ -181,54 +190,49 @@ public class NamespaceParser {
 						if (!maybeBracket.isOperator()) {
 							throw new ParsingException("Expected '(' or '=', but found " + maybeBracket);
 						}
-						if (maybeBracket.getOperator() == Operator.EQUALS) {
+						if (maybeBracket.getOperator() == Operator.ASSIGNMENT) {
 
-							// Should be followed by the equals sign and nothing else
-							SourceElement equalsElement = reader.next();
-							if (equalsElement.isOperator()) {
+							// Everything until the ';' should be the unparsed initial value
+							List<SourceElement> unparsedValueList = new ArrayList<SourceElement>();
 
-								// Everything until the ';' should be the unparsed initial value
-								List<SourceElement> unparsedValueList = new ArrayList<SourceElement>();
+							// Breaking upon reaching semicolon is more convenient than a loop condition
+							while (true) {
+								SourceElement partOfValue = reader.next();
 
-								// Breaking upon reaching semicolon is more convenient than a loop condition
-								while (true) {
-									SourceElement partOfValue = reader.next();
-
-									// Throw a ParsingException instead of NullPointerException
-									if (partOfValue == null) {
-										throw new ParsingException("The variable " + name + " of type "
-												+ typeBuilder.getTypeName() + " has an unfinished intial value.");
-									}
-
-									// The semicolon defines the end of the initial value.
-									// Intentionally don't add it to the unparsedValueList
-									if (partOfValue.isOperator() && partOfValue.getOperator() == Operator.SEMICOLON) {
-										break;
-									}
-
-									unparsedValueList.add(partOfValue);
+								// Throw a ParsingException instead of NullPointerException
+								if (partOfValue == null) {
+									throw new ParsingException("The variable " + name + " of type "
+											+ typeBuilder.getTypeName() + " has an unfinished intial value.");
 								}
 
-								namespace.createVariable(name, typeBuilder, new ValueBuilder(unparsedValueList));
-							} else {
-								throw new ParsingException("The equal sign was expected, but got " + equalsElement);
+								// The semicolon defines the end of the initial value.
+								// Intentionally don't add it to the unparsedValueList
+								if (partOfValue.isOperator() && partOfValue.getOperator() == Operator.SEMICOLON) {
+									break;
+								}
+
+								unparsedValueList.add(partOfValue);
 							}
+
+							namespace.createVariable(name, typeBuilder, new ValueBuilder(unparsedValueList));
 						} else if (maybeBracket.getOperator() == Operator.OPEN_BRACKET) {
 
 							// Read the initial parameters and body
 							ParamsBuilder parameters = ParamsParser.parse(reader);
-							
+
 							// The parameter parser won't read the opening '{', so do it here
 							SourceElement openCurly = reader.next();
-							
+
 							if (openCurly == null) {
-								throw new ParsingException("Expected begin op function " + name + ", but end of file was reached");
+								throw new ParsingException(
+										"Expected begin op function " + name + ", but end of file was reached");
 							}
-							
+
 							if (!(openCurly.isOperator() && openCurly.getOperator() == Operator.OPEN_BLOCK)) {
-								throw new ParsingException("Expected '{' to declare begin of function " + name + ", but found " + openCurly);
+								throw new ParsingException("Expected '{' to declare begin of function " + name
+										+ ", but found " + openCurly);
 							}
-							
+
 							// Gather the body
 							List<SourceElement> body = ExecutableParser.parseInitial(reader);
 
