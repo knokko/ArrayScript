@@ -120,11 +120,11 @@ public class NamespaceParser {
 						} else if (type == ElementTypes.INTERFACE) {
 							throw new ParsingException("Interfaces are not high on my priority list");
 						} else if (type == ElementTypes.ENUM) {
-							// TODO parse enum
+							throw new ParsingException("Enums will be added in a later version");
 						} else if (type == ElementTypes.INIT) {
-							// TODO parse code block and register init
+							app.registerInit(namespace.createInit(modifiers, name, ExecutableParser.parseInitial(reader)));
 						} else if (type == ElementTypes.MAIN) {
-							// TODO parse code block and register main
+							app.registerMain(namespace.createMain(modifiers, name, ExecutableParser.parseInitial(reader)));;
 						} else {
 							throw new Error(
 									"Did I forget a named type that should be in source?" + type.getClass().getName());
@@ -217,6 +217,19 @@ public class NamespaceParser {
 
 							// Read the initial parameters and body
 							ParamsBuilder parameters = ParamsParser.parse(reader);
+							
+							// The parameter parser won't read the opening '{', so do it here
+							SourceElement openCurly = reader.next();
+							
+							if (openCurly == null) {
+								throw new ParsingException("Expected begin op function " + name + ", but end of file was reached");
+							}
+							
+							if (!(openCurly.isOperator() && openCurly.getOperator() == Operator.OPEN_BLOCK)) {
+								throw new ParsingException("Expected '{' to declare begin of function " + name + ", but found " + openCurly);
+							}
+							
+							// Gather the body
 							List<SourceElement> body = ExecutableParser.parseInitial(reader);
 
 							namespace.createFunction(name, typeBuilder, parameters, body);
