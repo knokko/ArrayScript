@@ -1,8 +1,6 @@
 package arrayscript.parser;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -10,12 +8,13 @@ import arrayscript.lang.Modifier;
 import arrayscript.lang.Operator;
 import arrayscript.lang.element.ElementType;
 import arrayscript.lang.element.ElementTypes;
+import arrayscript.parser.SmallParser.ModResult;
 import arrayscript.parser.builder.AppBuilder;
 import arrayscript.parser.builder.NamespaceBuilder;
 import arrayscript.parser.builder.param.ParamsBuilder;
-import arrayscript.parser.builder.var.type.TypeBuilder;
 import arrayscript.parser.builder.var.value.ValueBuilder;
 import arrayscript.parser.source.SourceElement;
+import arrayscript.parser.source.reading.HistorySourceFileReader;
 import arrayscript.parser.source.reading.SourceFileReader;
 import arrayscript.parser.util.ParsingException;
 
@@ -66,40 +65,26 @@ public class NamespaceParser {
 					throw new ParsingException("Unexpected operator " + first.getOperator());
 				}
 			} else if (first.isWord() || first.isKeyword()) {
+				
+				// first is also a part of the modifiers, so use HistorySourceFileReader to pass it along
+				ModResult foundModifiers = SmallParser.parseModifiers(new HistorySourceFileReader(reader, first));
+				Set<Modifier> modifiers = foundModifiers.getModifiers();
 
-				// Eventual modifiers will come before the type
-				Set<Modifier> modifiers = new HashSet<Modifier>(1);
-
-				// It would be confusing to use first in the while loop
-				SourceElement next = first;
-
-				// All modifiers should be declared before the type (if there are any)
-				while (next.isKeyword() && next.getKeyword().isModifier()) {
-
-					// Don't allow duplicate modifiers
-					if (!modifiers.add(next.getKeyword().getModifier())) {
-						throw new ParsingException("Duplicated modifier " + next);
-					}
-
-					next = reader.next();
-
-					if (next == null) {
-						throw new ParsingException("Expected modifier or typename, but end of file was reached");
-					}
-				}
-
-				// Now that we have had all modifiers, the next source element must be the type
-				SourceElement typeElement = next;
+				// Now that we have had all modifiers, the next source element(s) must be the type
+				
+				// parseModifiers consumes an extra source element, so use HistorySourceFileReader to pass
+				// it along to the parseSomeType method
+				SmallParser.SomeType nextType = SmallParser.parseSomeType(new HistorySourceFileReader(reader, foundModifiers.getNext()));
 
 				// Distinguish between element types (class, namespace...) and variable types
-				// (string,number)
-				if (typeElement.isKeyword() && typeElement.getKeyword().isElementType()) {
-					ElementType type = typeElement.getKeyword().getElementType();
+				// (string,number...)
+				if (nextType.isElementType()) {
+					ElementType type = nextType.getElementType();
 
 					if (type.needsName()) {
 
 						// Observe that the name and opening curly bracket are read here
-						SourceElement nameElement = reader.next();
+						SourceElement nameElement = nextType.getNext();
 
 						if (nameElement == null) {
 							throw new ParsingException(
@@ -141,7 +126,7 @@ public class NamespaceParser {
 					} else {
 
 						// No name, so read the next curly bracket and start the parsing
-						SourceElement openCurly = reader.next();
+						SourceElement openCurly = nextType.getNext();
 
 						if (openCurly == null) {
 							throw new ParsingException("Expected '{', but end of file was reached instead");
@@ -158,63 +143,32 @@ public class NamespaceParser {
 								"All current types need names, but this type is " + type.getClass().getName());
 					}
 				} else {
-					// If the type is primitive, we can easily confirm it already
-					// If not, we will check for the declaration in a later stage
-					TypeBuilder typeBuilder;
-					if (typeElement.isKeyword()) {
-						if (typeElement.getKeyword().isType()) {
-							typeBuilder = new TypeBuilder(typeElement.getKeyword().getPrimitiveType());
-						} else {
-							throw new ParsingException("Expected a type name, but found " + typeElement);
-						}
-					} else if (typeElement.isWord()) {
-						typeBuilder = new TypeBuilder(typeElement.getWord());
-					} else {
-						throw new ParsingException("Expected a type name, but found " + typeElement);
-					}
 
 					// Read the name of the variable/function
-					SourceElement nameElement = reader.next();
+					SourceElement nameElement = nextType.getNext();
 
 					// The name should be given and nothing else
 					if (nameElement.isWord()) {
 						String name = nameElement.getWord();
-						if (name == null) {
-							throw new ParsingException(
-									"The type " + typeBuilder.getTypeName() + " is not defined correctly");
-						}
 
 						// If a function is being declared, there will be brackets
 						// If not, there must be an '='
 						SourceElement maybeBracket = reader.next();
+						
+						if (maybeBracket == null) {
+							throw new ParsingException("Expected '(' or '=', but end of file was reached");
+						}
+						
 						if (!maybeBracket.isOperator()) {
 							throw new ParsingException("Expected '(' or '=', but found " + maybeBracket);
 						}
 						if (maybeBracket.getOperator() == Operator.ASSIGNMENT) {
 
 							// Everything until the ';' should be the unparsed initial value
-							List<SourceElement> unparsedValueList = new ArrayList<SourceElement>();
-
-							// Breaking upon reaching semicolon is more convenient than a loop condition
-							while (true) {
-								SourceElement partOfValue = reader.next();
-
-								// Throw a ParsingException instead of NullPointerException
-								if (partOfValue == null) {
-									throw new ParsingException("The variable " + name + " of type "
-											+ typeBuilder.getTypeName() + " has an unfinished intial value.");
-								}
-
-								// The semicolon defines the end of the initial value.
-								// Intentionally don't add it to the unparsedValueList
-								if (partOfValue.isOperator() && partOfValue.getOperator() == Operator.SEMICOLON) {
-									break;
-								}
-
-								unparsedValueList.add(partOfValue);
-							}
-
-							namespace.createVariable(name, typeBuilder, new ValueBuilder(unparsedValueList));
+							List<SourceElement> unparsedValueList = SmallParser.readUntilSemiColon(reader);
+							
+							// Observe that the semicolon was consumed by the readUntilSemiColon call
+							namespace.createVariable(name, nextType.getVariableType(), new ValueBuilder(unparsedValueList));
 						} else if (maybeBracket.getOperator() == Operator.OPEN_BRACKET) {
 
 							// Read the initial parameters and body
@@ -236,14 +190,14 @@ public class NamespaceParser {
 							// Gather the body
 							List<SourceElement> body = ExecutableParser.parseInitial(reader);
 
-							namespace.createFunction(name, typeBuilder, parameters, body);
+							namespace.createFunction(name, nextType.getVariableType(), parameters, body);
 						} else {
 
 							// Either ( to declare function or = to declare the value
 							throw new ParsingException("Expected '(' or '=', but found " + maybeBracket);
 						}
 					} else {
-						throw new ParsingException("A name was expected, but got " + nameElement);
+						throw new ParsingException("A name for " + nextType + " was expected, but got " + nameElement);
 					}
 				}
 			} else {

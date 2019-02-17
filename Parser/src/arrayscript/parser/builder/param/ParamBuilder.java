@@ -8,7 +8,7 @@ public class ParamBuilder {
 	
 	private final TypeBuilder type;
 	
-	public ParamBuilder(String typeName, String name) {
+	public ParamBuilder(String[] typeName, String name) {
 		this.name = name;
 		this.type = new TypeBuilder(typeName);
 	}

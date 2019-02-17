@@ -1,19 +1,21 @@
 package arrayscript.parser.builder.var.type;
 
+import java.util.Arrays;
+
 import arrayscript.lang.var.type.Type;
 
 public class TypeBuilder {
 	
-	private final String typeName;
+	private final String[] typeName;
 	private Type type;
 	
-	public TypeBuilder(String typeName) {
+	public TypeBuilder(String[] typeName) {
 		this.typeName = typeName;
 	}
 	
 	public TypeBuilder(Type type) {
 		this.type = type;
-		this.typeName = type.getName();
+		this.typeName = new String[] {type.getName()};
 	}
 	
 	@Override
@@ -37,12 +39,30 @@ public class TypeBuilder {
 		if (type != null) {
 			return "confirmed " + type.getName();
 		} else {
-			return "unconfirmed " + typeName;
+			return "unconfirmed " + Arrays.toString(typeName);
 		}
 	}
 	
-	public String getTypeName() {
+	public String[] getTypeName() {
 		return typeName;
+	}
+	
+	public String getReadableTypeName() {
+		int length = typeName.length - 1;
+		for (String part : typeName) {
+			length += part.length();
+		}
+		
+		StringBuilder builder = new StringBuilder(length);
+		for (int index = 0; index < typeName.length - 1; index++) {
+			builder.append(typeName[index]);
+			builder.append('.');
+		}
+		
+		// The length must be at least 1, so this is safe to do
+		builder.append(typeName[typeName.length - 1]);
+		
+		return builder.toString();
 	}
 	
 	public boolean isTypeConfirmed() {

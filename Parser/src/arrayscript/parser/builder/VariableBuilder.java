@@ -24,7 +24,7 @@ public class VariableBuilder implements ElementBuilder {
 	 * @param unparsedValue The initial value that this variable should get, that is anything between the '='
 	 * and the ';' that terminates the variable declaration.
 	 */
-	public VariableBuilder(String typeName, String name, List<SourceElement> unparsedValue) {
+	public VariableBuilder(String[] typeName, String name, List<SourceElement> unparsedValue) {
 		Checks.notNull(typeName, "typeName");
 		Checks.notNull(name, "name");
 		this.type = new TypeBuilder(typeName);

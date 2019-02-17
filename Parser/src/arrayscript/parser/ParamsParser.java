@@ -7,8 +7,8 @@ import java.util.List;
 import arrayscript.lang.Operator;
 import arrayscript.parser.builder.param.ParamBuilder;
 import arrayscript.parser.builder.param.ParamsBuilder;
-import arrayscript.parser.builder.var.type.TypeBuilder;
 import arrayscript.parser.source.SourceElement;
+import arrayscript.parser.source.reading.HistorySourceFileReader;
 import arrayscript.parser.source.reading.SourceFileReader;
 import arrayscript.parser.util.ParsingException;
 
@@ -47,8 +47,14 @@ public class ParamsParser {
 				}
 			} else if (first.isWord() || first.isKeyword()){
 				
-				// The first must be the type name
-				SourceElement second = reader.next();
+				// The first is part of the type name, so pass it in a HistorySourceFileReader
+				SmallParser.SomeType type = SmallParser.parseSomeType(new HistorySourceFileReader(reader, first));
+				
+				if (type.isElementType()) {
+					throw new ParsingException("Expected a variable type, but found " + type.getElementType());
+				}
+				
+				SourceElement second = type.getNext();
 				
 				if (second == null) {
 					throw new ParsingException("Unfinished parameters");
@@ -68,17 +74,7 @@ public class ParamsParser {
 					if (third.isOperator()) {
 						
 						// Add the parameter to the list and either continue or terminate the loop
-						if (first.isWord()) {
-							paramList.add(new ParamBuilder(first.getWord(), second.getWord()));
-						} else {
-							
-							// first must be a keyword
-							if (first.getKeyword().isType()) {
-								paramList.add(new ParamBuilder(new TypeBuilder(first.getKeyword().getPrimitiveType()), second.getWord()));
-							} else {
-								throw new ParsingException("Expected type name, but found " + first);
-							}
-						}
+						paramList.add(new ParamBuilder(type.getVariableType(), second.getWord()));
 						
 						if (third.getOperator() == Operator.NEXT) {
 							continue;

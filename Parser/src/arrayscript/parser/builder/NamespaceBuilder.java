@@ -289,11 +289,11 @@ public class NamespaceBuilder implements ElementBuilder {
 			out.println();
 		}
 		for (VariableBuilder variable : variables) {
-			printTest1(out, indentLevel, variable.getType().getTypeName() + " " + variable.getName() + " = ... ;");
+			printTest1(out, indentLevel, variable.getType().getReadableTypeName() + " " + variable.getName() + " = ... ;");
 			out.println();
 		}
 		for (FunctionBuilder function : functions) {
-			printTest1(out, indentLevel, function.getReturnType().getTypeName() + " " + function.getName() + "( ... ) {");
+			printTest1(out, indentLevel, function.getReturnType().getReadableTypeName() + " " + function.getName() + "( ... ) {");
 			// TODO expand function body
 			printTest1(out, indentLevel, "}");
 			out.println();
