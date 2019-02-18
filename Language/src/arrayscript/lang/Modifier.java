@@ -12,22 +12,28 @@ public enum Modifier {
 	/**
 	 * A constant variable can't change its value. 
 	 * A constant class or interface can't be extended.
-	 * A constant namespace can't be expanded.
 	 */
 	CONST,
 	
 	/**
+	 * The define keyword can be used on variables, functions, classes and enums
+	 * 
 	 * Variables that have the define keyword are also constant, but must be defined directly in the code.
 	 * References to variables with the define keyword will literally be replaced by the value of the variable
 	 * right before the actual compilation and the variable itself will not be compiled. For instance, when a
 	 * define variable has a value of 5, all places in the code that refer to it will be replaced by 5 right
 	 * before the actual compilation and the variable itself will not be compiled.
 	 * 
-	 * All enum constants of enums with the define keyword will be assigned a unique integer. All references
-	 * to the enum constants will be replaced by that number right before compilation.
-	 * 
 	 * Calls to functions with the define keywords will more or less be replaced with the function body. How
 	 * this is done exactly is to determine by the compiler.
+	 * 
+	 * Classes can have the define keyword if they have at most 1 property. During compilation, instances
+	 * of the class will be replaced by their single property rather than keeping a proper instance. If the
+	 * class doesn't have any properties, it will be passed around as 0 and method calls will be replaced by
+	 * simple function calls.
+	 * 
+	 * All enum constants of enums with the define keyword will be assigned a unique integer. All references
+	 * to the enum constants will be replaced by that number right before compilation.
 	 * 
 	 * As you might have noticed, this keyword is mostly made for micro-performance operations.
 	 */
@@ -41,15 +47,37 @@ public enum Modifier {
 	STATIC,
 	
 	/**
+	 * The implicit keyword can be used for constructors with 1 parameter, getters and setters.
+	 * 
+	 * Constructors with this modifier can be invoked by specifying the value of the parameter without 
+	 * using the new keyword in some circumstances. That is, when the value of a variable with the class 
+	 * as its type is about to be assigned.
+	 * 
+	 * Getters with this modifier can be invoked by simply using classInstance.variableName rather than
+	 * classInstance.getVariableName(). Setters with this modifier can be invoked by simply using
+	 * classInstance.variableName = newValue rather than classInstance.setVariableName(newValue).
+	 */
+	IMPLICIT,
+	
+	/**
 	 * Namespaces can be declared open. Open namespaces can be expanded in another file. So you don't
 	 * necessarily need a massive source file for a massive namespace.
 	 */
 	OPEN,
 	
 	/**
-	 * I forgot what this was for
+	 * The private modifier can be used on variables and functions to make sure they can only be accessed
+	 * from the namespace or class that owns the variable or function.
 	 */
-	CLOSED;
+	PRIVATE,
+	
+	/**
+	 * The protected modifier can be used on variables and functions to make sure they can not be accessed
+	 * from everywhere. They can be accessed from the class or namespace that declares them, from anything
+	 * that is defined inside the class or namespace where the variable or function is defiend or by
+	 * subclasses of the class where the modifier is defined (if it is defined in a class).
+	 */
+	PROTECTED;
 	
 	private static final String[] LOWERCASE;
 	
@@ -82,12 +110,11 @@ public enum Modifier {
 	}
 	
 	/**
-	 * Checks if a single element can have both modifiers. Returns true if possible and false if impossible.
-	 * @param mod1 A modifier
-	 * @param mod2 The other modifier
-	 * @return true if an element can have both modifiers, false if not
+	 * Determines whether or not this is a visibility modifier. A modifier is considered to be a visibility
+	 * modifier if it is either Modifier.PRIVATE or Modifier.PROTECTED.
+	 * @return True if and only if this is a visibility modifier
 	 */
-	public static boolean isCompatible(Modifier mod1, Modifier mod2) {
-		return mod1 != DEFINE && mod2 != DEFINE;
+	public boolean isVisibility() {
+		return this == PRIVATE || this == PROTECTED;
 	}
 }

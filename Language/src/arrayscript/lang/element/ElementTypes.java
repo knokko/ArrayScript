@@ -49,6 +49,25 @@ public class ElementTypes {
 	public static final ElementType.Method METHOD = new ElementType.Method();
 	
 	/**
+	 * Constructors are necessary to create instances of classes. They can be invoked using the new keyword.
+	 */
+	public static final ElementType.Constructor CONSTRUCTOR = new ElementType.Constructor();
+	
+	/**
+	 * A getter is a short way to define a 'getter method'. The programmer can choose whether or not to give
+	 * the getter a body. If the getter doesn't have a body, it will act as a basic getter that just directly
+	 * returns the property it is written for. The name of a getter should be the same as the name of the
+	 * property that the getter is bound to. Whenever a getter for variable x is defined, other parts of the
+	 * code can use it via the getX() 'method' that will be created implicitly by the getter.
+	 */
+	public static final ElementType.Getter GETTER = new ElementType.Getter();
+	
+	/**
+	 * A setter is a short way to define a 'setter method'. //TODO finish docs
+	 */
+	public static final ElementType.Setter SETTER = new ElementType.Setter();
+	
+	/**
 	 * An init is a named block of code that should be executed before the application truly begins. The
 	 * program configuration can determine the order in which all the init blocks get executed.
 	 */

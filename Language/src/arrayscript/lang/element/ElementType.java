@@ -49,7 +49,7 @@ public abstract class ElementType {
 
 		@Override
 		public boolean canHave(Modifier modifier) {
-			return modifier == Modifier.CONST;
+			return modifier == Modifier.OPEN || modifier.isVisibility();
 		}
 
 		@Override
@@ -74,7 +74,7 @@ public abstract class ElementType {
 
 		@Override
 		public boolean canHave(Modifier modifier) {
-			return modifier == Modifier.CONST;
+			return modifier == Modifier.CONST || modifier == Modifier.DEFINE || modifier.isVisibility();
 		}
 
 		@Override
@@ -99,7 +99,7 @@ public abstract class ElementType {
 
 		@Override
 		public boolean canHave(Modifier modifier) {
-			return modifier == Modifier.CONST;
+			return modifier == Modifier.CONST || modifier.isVisibility();
 		}
 
 		@Override
@@ -124,7 +124,7 @@ public abstract class ElementType {
 
 		@Override
 		public boolean canHave(Modifier modifier) {
-			return modifier == Modifier.DEFINE;
+			return modifier == Modifier.DEFINE || modifier.isVisibility();
 		}
 
 		@Override
@@ -149,7 +149,7 @@ public abstract class ElementType {
 
 		@Override
 		public boolean canHave(Modifier modifier) {
-			return modifier == Modifier.DEFINE || modifier == Modifier.CONST;
+			return modifier == Modifier.DEFINE || modifier == Modifier.CONST || modifier.isVisibility();
 		}
 
 		@Override
@@ -175,7 +175,7 @@ public abstract class ElementType {
 
 		@Override
 		public boolean canHave(Modifier modifier) {
-			return modifier == Modifier.STATIC || modifier == Modifier.CONST || modifier == Modifier.DEFINE;
+			return modifier == Modifier.STATIC || modifier == Modifier.CONST || modifier == Modifier.DEFINE || modifier.isVisibility();
 		}
 
 		@Override
@@ -201,7 +201,7 @@ public abstract class ElementType {
 
 		@Override
 		public boolean canHave(Modifier modifier) {
-			return modifier == Modifier.DEFINE;
+			return modifier == Modifier.DEFINE || modifier.isVisibility();
 		}
 
 		@Override
@@ -227,7 +227,7 @@ public abstract class ElementType {
 
 		@Override
 		public boolean canHave(Modifier modifier) {
-			return modifier == Modifier.CONST || modifier == Modifier.STATIC || modifier == Modifier.DEFINE;
+			return modifier == Modifier.CONST || modifier == Modifier.STATIC || modifier == Modifier.DEFINE || modifier.isVisibility();
 		}
 
 		@Override
@@ -244,6 +244,82 @@ public abstract class ElementType {
 		public boolean shouldAppearInSource() {
 			// The return type should be used instead
 			return false;
+		}
+	}
+	
+	public static class Constructor extends ElementType {
+		
+		Constructor(){}
+
+		@Override
+		public boolean canHave(Modifier modifier) {
+			return modifier == Modifier.IMPLICIT || modifier == Modifier.DEFINE || modifier.isVisibility();
+		}
+
+		@Override
+		public String getName() {
+			return "constructor";
+		}
+
+		@Override
+		public boolean needsName() {
+			return false;
+		}
+
+		@Override
+		public boolean shouldAppearInSource() {
+			return true;
+		}
+	}
+	
+	public static class Getter extends ElementType {
+		
+		Getter(){}
+
+		@Override
+		public boolean canHave(Modifier modifier) {
+			return modifier == Modifier.DEFINE || modifier == Modifier.CONST || modifier == Modifier.STATIC || modifier.isVisibility();
+		}
+
+		@Override
+		public String getName() {
+			return "getter";
+		}
+
+		@Override
+		public boolean needsName() {
+			return true;
+		}
+
+		@Override
+		public boolean shouldAppearInSource() {
+			return true;
+		}
+	}
+	
+	public static class Setter extends ElementType {
+		
+		Setter(){}
+
+		@Override
+		public boolean canHave(Modifier modifier) {
+			return modifier == Modifier.DEFINE || modifier == Modifier.CONST 
+					|| modifier == Modifier.IMPLICIT || modifier == Modifier.STATIC || modifier.isVisibility();
+		}
+
+		@Override
+		public String getName() {
+			return "setter";
+		}
+
+		@Override
+		public boolean needsName() {
+			return true;
+		}
+
+		@Override
+		public boolean shouldAppearInSource() {
+			return true;
 		}
 	}
 	

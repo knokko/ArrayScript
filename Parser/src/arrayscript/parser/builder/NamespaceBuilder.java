@@ -119,17 +119,18 @@ public class NamespaceBuilder implements ElementBuilder {
 	 * to create the class. If this namespace already has an element with the given name, a ParsingException
 	 * will be thrown.
 	 * @param name The name of the class that should be created
+	 * @param modifiers The modifiers of the class that should be created
 	 * @return The class builder for the new class
 	 * @throws ParsingException If this namespace already has an element with the given name
 	 */
-	public ClassBuilder createClass(String name) throws ParsingException {
+	public ClassBuilder createClass(String name, Set<Modifier> modifiers) throws ParsingException {
 		
 		// Expanding classes is not allowed, so no other element with the same name may exist
 		if (hasElement(name)) {
 			throw new ParsingException("Multiple elements with name '" + name + "' in namespace " + this);
 		}
 		
-		ClassBuilder classBuilder = new ClassBuilder(name, this);
+		ClassBuilder classBuilder = new ClassBuilder(name, this, modifiers);
 		elements.add(classBuilder);
 		classes.add(classBuilder);
 		return classBuilder;

@@ -27,11 +27,10 @@ public enum Keyword {
 	 * Class-related keywords
 	 */
 	STATIC(Modifier.STATIC, null, null),
-	CONSTRUCTOR(null, null, null),
-	GETTER(null, null, null),
-	SETTER(null, null, null),
-	
-	// TODO maybe assign element types to constructor, getter and setter
+	CONSTRUCTOR(null, null, ElementTypes.CONSTRUCTOR),
+	GETTER(null, null, ElementTypes.GETTER),
+	SETTER(null, null, ElementTypes.SETTER),
+	NEW(null, null, null),
 	
 	
 	/*
@@ -55,12 +54,17 @@ public enum Keyword {
 	CONST(Modifier.CONST, null, null),
 	DEFINE(Modifier.DEFINE, null, null),
 	OPEN(Modifier.OPEN, null, null),
-	CLOSED(Modifier.CLOSED, null, null),
+	PRIVATE(Modifier.PRIVATE, null, null),
+	PROTECTED(Modifier.PROTECTED, null, null),
 	
 	/*
-	 * Other
+	 * Code block keywords
 	 */
-	SCOPE(null, null, null);
+	SCOPE(null, null, null),
+	IF(null, null, null),
+	ELSE(null, null, null),
+	WHILE(null, null, null),
+	FOR(null, null, null);
 	
 	private final Modifier modifier;
 	private final Type primitiveType;

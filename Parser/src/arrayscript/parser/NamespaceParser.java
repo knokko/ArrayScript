@@ -97,6 +97,10 @@ public class NamespaceParser {
 
 						String name = nameElement.getWord();
 						SourceElement openCurly = reader.next();
+						
+						if (openCurly == null) {
+							throw new ParsingException("Expected '{', but end of file was reached");
+						}
 
 						// All elements at this point must be defined with a { after the name
 						if (!(openCurly.isOperator() && openCurly.getOperator() == Operator.OPEN_BLOCK)) {
@@ -104,24 +108,27 @@ public class NamespaceParser {
 						}
 
 						// I hate switch
-						if (type == ElementTypes.NAMESPACE) {
-							parseNamespace(reader, app, namespace.createNamespace(name, modifiers));
-						} else if (type == ElementTypes.CLASS) {
-							// TODO parse class
-						} else if (type == ElementTypes.INTERFACE) {
-							throw new ParsingException("Interfaces are not high on my priority list");
+						if (type == ElementTypes.CLASS) {
+							ClassParser.parseClass(reader, app, namespace.createClass(name, modifiers));
 						} else if (type == ElementTypes.ENUM) {
 							throw new ParsingException("Enums will be added in a later version");
+						} else if (type == ElementTypes.GETTER) {
+							throw new ParsingException("I am planning to add getters to namespaces later");
 						} else if (type == ElementTypes.INIT) {
 							app.registerInit(
 									namespace.createInit(modifiers, name, ExecutableParser.parseInitial(reader)));
+						} else if (type == ElementTypes.INTERFACE) {
+							throw new ParsingException("Interfaces are not high on my priority list");
 						} else if (type == ElementTypes.MAIN) {
 							app.registerMain(
 									namespace.createMain(modifiers, name, ExecutableParser.parseInitial(reader)));
 							;
+						} else if (type == ElementTypes.NAMESPACE) {
+							parseNamespace(reader, app, namespace.createNamespace(name, modifiers));
+						} else if (type == ElementTypes.SETTER) {
+							throw new ParsingException("I am planning to add setters to namespaces later");
 						} else {
-							throw new Error(
-									"Did I forget a named type that should be in source?" + type.getClass().getName());
+							throw new Error("It looks like I forgot element type " + type.getName());
 						}
 					} else {
 
@@ -136,11 +143,12 @@ public class NamespaceParser {
 							throw new ParsingException("Expected '{', but found " + openCurly);
 						}
 
-						// Ehm... well... I initially designed main and init not to have names, but I
-						// changed my mind and now all current element types have names
-
-						throw new ParsingException(
-								"All current types need names, but this type is " + type.getClass().getName());
+						// Currently, constructor is the only element type that doesn't require a name
+						if (type == ElementTypes.CONSTRUCTOR) {
+							throw new ParsingException("You can't define a constructor in a namespace");
+						} else {
+							throw new Error("It looks like I forgot element type " + type.getName());
+						}
 					}
 				} else {
 
