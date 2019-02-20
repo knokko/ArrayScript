@@ -12,13 +12,14 @@ import arrayscript.parser.SmallParser.ModResult;
 import arrayscript.parser.builder.AppBuilder;
 import arrayscript.parser.builder.NamespaceBuilder;
 import arrayscript.parser.builder.param.ParamsBuilder;
+import arrayscript.parser.builder.var.type.TypeBuilder;
 import arrayscript.parser.builder.var.value.ValueBuilder;
 import arrayscript.parser.source.SourceElement;
 import arrayscript.parser.source.reading.HistorySourceFileReader;
 import arrayscript.parser.source.reading.SourceFileReader;
 import arrayscript.parser.util.ParsingException;
 
-public class NamespaceParser {
+public class NamespaceParser extends AbstractNamespaceParser {
 
 	/**
 	 * Attempts to parse the content of a single namespace. This method must be
@@ -214,5 +215,105 @@ public class NamespaceParser {
 				throw new ParsingException("Unexpected string ('" + first.getStringContent() + "')");
 			}
 		}
+	}
+	
+	private final NamespaceBuilder namespace;
+	private final AppBuilder app;
+	
+	private NamespaceParser(NamespaceBuilder namespace, AppBuilder app) {
+		this.namespace = namespace;
+		this.app = app;
+	}
+
+	@Override
+	protected void endOfFileBeforeClosed() throws ParsingException {
+		if (namespace.isGlobal()) {
+			return;
+		} else {
+			throw new ParsingException("Unclosed namespace " + namespace);
+		}
+	}
+
+	@Override
+	protected void defineClass(SourceFileReader reader, Set<Modifier> modifiers, String name)
+			throws IOException, ParsingException {
+		assumeOperator(reader.next(), Operator.OPEN_BLOCK);
+		
+		ClassParser.parseClass(reader, app, namespace.createClass(name, modifiers));
+	}
+
+	@Override
+	protected void defineConstructor(SourceFileReader reader, Set<Modifier> modifiers)
+			throws IOException, ParsingException {
+		throw new ParsingException("You can't define constructors directly in namespaces.");
+	}
+
+	@Override
+	protected void defineEnum(SourceFileReader reader, Set<Modifier> modifiers, String name)
+			throws IOException, ParsingException {
+		throw new ParsingException("Enums will be added in a later version");
+	}
+
+	@Override
+	protected void defineFunction(SourceFileReader reader, Set<Modifier> modifiers, TypeBuilder type, String name)
+			throws IOException, ParsingException {
+		
+		// Read the initial parameters and body
+		ParamsBuilder parameters = ParamsParser.parse(reader);
+
+		// The parameter parser won't read the opening '{', so do it here
+		assumeOperator(reader.next(), Operator.OPEN_BLOCK);
+
+		// Gather the body
+		List<SourceElement> body = ExecutableParser.parseInitial(reader);
+
+		namespace.createFunction(name, type, parameters, body);
+	}
+
+	@Override
+	protected void defineGetter(SourceFileReader reader, Set<Modifier> modifiers, String name)
+			throws IOException, ParsingException {
+		throw new ParsingException("I am planning to add getters for namespaces in a later version");
+	}
+
+	@Override
+	protected void defineInit(SourceFileReader reader, Set<Modifier> modifiers, String id)
+			throws IOException, ParsingException {
+		app.registerInit(namespace.createInit(modifiers, id, ExecutableParser.parseInitial(reader)));
+	}
+
+	@Override
+	protected void defineInterface(SourceFileReader reader, Set<Modifier> modifiers, String id)
+			throws IOException, ParsingException {
+		throw new ParsingException("Interfaces are not high on my priority list");
+	}
+
+	@Override
+	protected void defineMain(SourceFileReader reader, Set<Modifier> modifiers, String id)
+			throws IOException, ParsingException {
+		app.registerMain(namespace.createMain(modifiers, id, ExecutableParser.parseInitial(reader)));
+	}
+
+	@Override
+	protected void defineNamespace(SourceFileReader reader, Set<Modifier> modifiers, String name)
+			throws IOException, ParsingException {
+		parseNamespace(reader, app, namespace.createNamespace(name, modifiers));
+	}
+
+	@Override
+	protected void defineSetter(SourceFileReader reader, Set<Modifier> modifiers, String name)
+			throws IOException, ParsingException {
+		throw new ParsingException("I am planning to add setters to namespaces later");
+	}
+
+	@Override
+	protected void defineVariable(SourceFileReader reader, SourceElement nextElement, Set<Modifier> modifiers,
+			TypeBuilder type, String name) throws IOException, ParsingException {
+		
+		// Everything until the ';' should be the unparsed initial value
+		List<SourceElement> unparsedValueList = SmallParser.readUntilSemiColon(reader);
+		
+		// Observe that the semicolon was consumed by the readUntilSemiColon call
+		namespace.createVariable(name, type, new ValueBuilder(unparsedValueList));
 	}
 }

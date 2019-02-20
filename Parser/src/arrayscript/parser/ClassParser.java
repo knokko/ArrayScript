@@ -89,6 +89,21 @@ public class ClassParser {
 							throw new ParsingException("Enums are not very high on my priority list");
 						} else if (elementType == ElementTypes.GETTER) {
 							// TODO parse getter
+							SourceElement colonOrCurly = reader.next();
+							
+							if (colonOrCurly == null) {
+								throw new ParsingException("Expected a ';' or '{' after setter " + name + ", but end of file was reached");
+							}
+							
+							if (colonOrCurly.isOperator() && colonOrCurly.getOperator() == Operator.SEMICOLON) {
+								
+								// A default getter is being defined
+							} else if (colonOrCurly.isOperator() && colonOrCurly.getOperator() == Operator.OPEN_BLOCK) {
+								
+								// The programmer creates a getter with a custom body
+							} else {
+								throw new ParsingException("Expected a ';' or '{' after setter " + name + ", but found " + colonOrCurly);
+							}
 						} else if (elementType == ElementTypes.INIT) {
 							throw new ParsingException("I think I will allow inits in classes later");
 						} else if (elementType == ElementTypes.INTERFACE) {
