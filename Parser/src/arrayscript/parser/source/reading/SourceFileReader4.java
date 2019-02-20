@@ -7,13 +7,14 @@ import java.util.Map;
 import arrayscript.lang.Keyword;
 import arrayscript.parser.source.SourceElement;
 import arrayscript.parser.source.SourceKeyword;
+import arrayscript.parser.source.SourceNumber;
 import arrayscript.parser.util.ParsingException;
 
 /**
  * The fourth and last source file reader in the chain of source file readers. This reader takes the result
- * of the third source reader as input and distinguishes the keywords from the other words. Currently, the
- * results of these source file readers are passed directly to the source file reader that will be used by
- * the actual parser.
+ * of the third source reader as input and distinguishes the keywords and numbers from the other words. 
+ * Currently, the results of these source file readers are passed directly to the source file reader that will 
+ * be used by the actual parser.
  * @author knokko
  *
  */
@@ -67,6 +68,13 @@ class SourceFileReader4 {
 			// The word was actually a keyword, so return it as keyword
 			if (asKeyword != null) {
 				return SourceKeyword.getInstance(asKeyword);
+			}
+			
+			// Check if this word is actually a number
+			try {
+				return new SourceNumber(Double.parseDouble(from3.getWord()));
+			} catch (NumberFormatException ex) {
+				// Ok, this is not a number, so continue
 			}
 		}
 		

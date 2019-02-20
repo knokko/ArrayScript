@@ -40,4 +40,9 @@ public class SourceString implements SourceElement {
 	public Keyword getKeyword() throws UnsupportedOperationException {
 		throw new UnsupportedOperationException("This is not a keyword, but a string");
 	}
+
+	@Override
+	public double getNumber() throws UnsupportedOperationException {
+		throw new UnsupportedOperationException("This is not a number, but a string");
+	}
 }

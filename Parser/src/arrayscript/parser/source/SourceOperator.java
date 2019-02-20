@@ -58,4 +58,9 @@ public class SourceOperator implements SourceElement {
 	public Keyword getKeyword() throws UnsupportedOperationException {
 		throw new UnsupportedOperationException("This is not a keyword, but an operator");
 	}
+
+	@Override
+	public double getNumber() throws UnsupportedOperationException {
+		throw new UnsupportedOperationException("This is not a number, but an operator");
+	}
 }

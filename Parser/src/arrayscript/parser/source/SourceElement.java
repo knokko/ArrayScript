@@ -42,6 +42,14 @@ public interface SourceElement {
 	}
 	
 	/**
+	 * Determines whether this source element is a number, or not.
+	 * @return true if and only if the type of this source element is SourceElementType.NUMBER
+	 */
+	default boolean isNumber() {
+		return getType() == SourceElementType.NUMBER;
+	}
+	
+	/**
 	 * Determines whether this source element is an operator, or not.
 	 * @return true if and only if the type of this source element is SourceElementType.OPERATOR
 	 */
@@ -51,15 +59,14 @@ public interface SourceElement {
 	
 	/**
 	 * Use this method to get the operator that this source element represents after you checked that
-	 * getType() returns SourceElementType.OPERATOR.
+	 * isOperator() returns true.
 	 * @return The operator if this source element represents an operator
 	 * @throws UnsupportedOperationException If this source element doesn't represent an operator
 	 */
 	Operator getOperator() throws UnsupportedOperationException;
 	
 	/**
-	 * Use this method to get the content of the string after you checked that getType() returns
-	 * SourceElementType.STRING.
+	 * Use this method to get the content of the string after you checked that isString() returns true.
 	 * @return The content of the string that is represented by this source element if this source element
 	 * represents a string
 	 * @throws UnsupportedOperationException If this source element doesn't represent a string
@@ -67,12 +74,20 @@ public interface SourceElement {
 	String getStringContent() throws UnsupportedOperationException;
 	
 	/**
-	 * Use this method to get the 'word' that this source element represents after you checked that getType()
-	 * returns SourceElementType.WORD.
+	 * Use this method to get the 'word' that this source element represents after you checked that isWord()
+	 * returns true.
 	 * @return The word that is represented by this source element if this source element represents a word
 	 * @throws UnsupportedOperationException If this source element doesn't represent a word
 	 */
 	String getWord() throws UnsupportedOperationException;
+	
+	/**
+	 * Use this number to get the number value of this source element after you checked that isNumber()
+	 * returned true.
+	 * @return The value of this number
+	 * @throws UnsupportedOperationException If this source element is not a number
+	 */
+	double getNumber() throws UnsupportedOperationException;
 	
 	/**
 	 * Use this method to get the keyword that this source elements represents after you checked that

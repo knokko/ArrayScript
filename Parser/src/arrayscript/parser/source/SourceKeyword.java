@@ -58,4 +58,9 @@ public class SourceKeyword implements SourceElement {
 	public String toString() {
 		return keyword.name();
 	}
+
+	@Override
+	public double getNumber() throws UnsupportedOperationException {
+		throw new UnsupportedOperationException("This is not a number, but a keyword");
+	}
 }

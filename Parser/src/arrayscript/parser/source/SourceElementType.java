@@ -28,6 +28,12 @@ public enum SourceElementType {
 	STRING,
 	
 	/**
+	 * Numbers can be floating point numbers or integers. Words in the source code that are valid numbers
+	 * will be considered numbers and no longer words.
+	 */
+	NUMBER,
+	
+	/**
 	 * Operators are sequences of characters that have a special meaning in this language (and most other
 	 * languages). For instance, =, +, *= and && are operators.
 	 */

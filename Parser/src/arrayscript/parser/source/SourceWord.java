@@ -40,4 +40,9 @@ public class SourceWord implements SourceElement {
 	public Keyword getKeyword() throws UnsupportedOperationException {
 		throw new UnsupportedOperationException("This is not a keyword, but a normal word");
 	}
+
+	@Override
+	public double getNumber() throws UnsupportedOperationException {
+		throw new UnsupportedOperationException("This is not a number, but a word");
+	}
 }
