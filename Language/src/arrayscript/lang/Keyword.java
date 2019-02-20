@@ -64,7 +64,19 @@ public enum Keyword {
 	IF(null, null, null),
 	ELSE(null, null, null),
 	WHILE(null, null, null),
-	FOR(null, null, null);
+	FOR(null, null, null),
+	
+	/*
+	 * Javascript-only
+	 */
+	WINDOW(null, null, null),
+	DOCUMENT(null, null, null),
+	
+	/*
+	 * Other keywords
+	 */
+	IMPORT(null, null, null)
+	;
 	
 	private final Modifier modifier;
 	private final Type primitiveType;
