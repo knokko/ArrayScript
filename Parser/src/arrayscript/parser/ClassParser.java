@@ -5,17 +5,25 @@ import java.util.Set;
 
 import arrayscript.lang.Modifier;
 import arrayscript.lang.Operator;
-import arrayscript.lang.element.ElementType;
-import arrayscript.lang.element.ElementTypes;
-import arrayscript.parser.SmallParser.ModResult;
 import arrayscript.parser.builder.AppBuilder;
 import arrayscript.parser.builder.ClassBuilder;
+import arrayscript.parser.builder.param.ParamsBuilder;
+import arrayscript.parser.builder.var.type.TypeBuilder;
+import arrayscript.parser.executable.ExecutableBuilder;
 import arrayscript.parser.source.SourceElement;
-import arrayscript.parser.source.reading.HistorySourceFileReader;
 import arrayscript.parser.source.reading.SourceFileReader;
 import arrayscript.parser.util.ParsingException;
 
-public class ClassParser {
+public class ClassParser extends AbstractNamespaceParser {
+	
+	@SuppressWarnings("unused")
+	private final AppBuilder app;
+	private final ClassBuilder classBuilder;
+	
+	private ClassParser(AppBuilder app, ClassBuilder classBuilder) {
+		this.app = app;
+		this.classBuilder = classBuilder;
+	}
 	
 	/**
 	 * Attempts to parse the content of a single class and adds the parsed content to the provided class
@@ -30,110 +38,106 @@ public class ClassParser {
 	 * defined correctly in the source code
 	 */
 	public static void parseClass(SourceFileReader reader, AppBuilder app, ClassBuilder classBuilder) throws IOException, ParsingException {
+		ClassParser instance = new ClassParser(app, classBuilder);
+		instance.parse(reader, app);
+	}
+
+	@Override
+	protected void endOfFileBeforeClosed() throws ParsingException {
+		throw new ParsingException("End of file was reached before this class was closed");
+	}
+
+	@Override
+	protected void defineClass(SourceFileReader reader, Set<Modifier> modifiers, String name)
+			throws IOException, ParsingException {
+		throw new ParsingException("I think I will allow inner classes later");
+	}
+
+	@Override
+	protected void defineConstructor(SourceFileReader reader, Set<Modifier> modifiers)
+			throws IOException, ParsingException {
+		// TODO Parse constructor
+	}
+
+	@Override
+	protected void defineEnum(SourceFileReader reader, Set<Modifier> modifiers, String name)
+			throws IOException, ParsingException {
+		throw new ParsingException("Enums are not very high on my priority list");
+	}
+
+	@Override
+	protected void defineFunction(SourceFileReader reader, Set<Modifier> modifiers, TypeBuilder type, String name)
+			throws IOException, ParsingException {
 		
-		// Breaking upon finding the closing '}' is easier than using a loop terminate condition
-		while (true) {
+		// First read the parameters and function body (but don't try to understand it)
+		ParamsBuilder parameters = ParamsParser.parse(reader);
+		assumeOperator(reader.next(), Operator.OPEN_BLOCK);
+		ExecutableBuilder body = new ExecutableBuilder(ExecutableParser.parseInitial(reader));
+		
+		// If static add function, otherwise add method
+		if (modifiers.contains(Modifier.STATIC)) {
 			
-			SourceElement first = reader.next();
-			
-			if (first == null) {
-				throw new ParsingException("End of file was reached before class " + classBuilder.getName() + " was closed");
-			}
-			
-			// break if the closing '}' is read
-			if (first.isOperator()) {
-				if (first.getOperator() == Operator.CLOSE_BLOCK) {
-					break;
-				} else {
-					throw new ParsingException("Unexpected " + first);
-				}
-			}
-			
-			// the first should be a word or keyword
-			else if (first.isWord() || first.isKeyword()) {
-				
-				// first is also a part of the modifiers, so use HistorySourceFileReader to pass it along
-				ModResult foundModifiers = SmallParser.parseModifiers(new HistorySourceFileReader(reader, first));
-				Set<Modifier> modifiers = foundModifiers.getModifiers();
-
-				// Now that we have had all modifiers, the next source element(s) must be the type
-				
-				// parseModifiers consumes an extra source element, so use HistorySourceFileReader to pass
-				// it along to the parseSomeType method
-				SmallParser.SomeType nextType = SmallParser.parseSomeType(new HistorySourceFileReader(reader, foundModifiers.getNext()));
-
-				// Distinguish between element types (class, namespace...) and variable types
-				// (string,number...)
-				if (nextType.isElementType()) {
-					
-					// The next type is an element type
-					ElementType elementType = nextType.getElementType();
-					if (elementType.needsName()) {
-						
-						SourceElement nameElement = nextType.getNext();
-						
-						if (nameElement == null) {
-							throw new ParsingException("Name of " + elementType.getName() + " was expected, but end of file was reached");
-						}
-						
-						if (!nameElement.isWord()) {
-							throw new ParsingException("Name of " + elementType.getName() + " was expected, but found " + nameElement);
-						}
-						
-						String name = nameElement.getWord();
-						
-						// I hate switch
-						if (elementType == ElementTypes.CLASS) {
-							throw new ParsingException("I think I will allow inner classes later");
-						} else if (elementType == ElementTypes.ENUM) {
-							throw new ParsingException("Enums are not very high on my priority list");
-						} else if (elementType == ElementTypes.GETTER) {
-							// TODO parse getter
-							SourceElement colonOrCurly = reader.next();
-							
-							if (colonOrCurly == null) {
-								throw new ParsingException("Expected a ';' or '{' after setter " + name + ", but end of file was reached");
-							}
-							
-							if (colonOrCurly.isOperator() && colonOrCurly.getOperator() == Operator.SEMICOLON) {
-								
-								// A default getter is being defined
-							} else if (colonOrCurly.isOperator() && colonOrCurly.getOperator() == Operator.OPEN_BLOCK) {
-								
-								// The programmer creates a getter with a custom body
-							} else {
-								throw new ParsingException("Expected a ';' or '{' after setter " + name + ", but found " + colonOrCurly);
-							}
-						} else if (elementType == ElementTypes.INIT) {
-							throw new ParsingException("I think I will allow inits in classes later");
-						} else if (elementType == ElementTypes.INTERFACE) {
-							throw new ParsingException("Interfaces are not high on my priority list");
-						} else if (elementType == ElementTypes.MAIN) {
-							throw new ParsingException("I don't think I will allow mains in classes");
-						} else if (elementType == ElementTypes.NAMESPACE) {
-							throw new ParsingException("I think I will allow namespaces in classes later");
-						} else if (elementType == ElementTypes.SETTER) {
-							// TODO parse setter
-						} else {
-							throw new Error("It looks like I forgot element type " + elementType);
-						}
-					} else {
-						
-						if (elementType == ElementTypes.CONSTRUCTOR) {
-							// TODO parse constructor
-						} else {
-							throw new Error("It looks like I forgot element type " + elementType);
-						}
-					}
-				} else {
-					// The next type is a variable type
-				}
-			}
-			
-			// Nothing else
-			else {
-				throw new ParsingException("Unexpected " + first);
-			}
+			modifiers.remove(Modifier.STATIC);
+			classBuilder.addFunction(name, modifiers, type, parameters, body);
+		} else {
+			classBuilder.addMethod(name, modifiers, type, parameters, body);
 		}
+	}
+
+	@Override
+	protected void defineGetter(SourceFileReader reader, Set<Modifier> modifiers, String name)
+			throws IOException, ParsingException {
+		// TODO parse getter
+		SourceElement colonOrCurly = reader.next();
+		
+		if (colonOrCurly == null) {
+			throw new ParsingException("Expected a ';' or '{' after setter " + name + ", but end of file was reached");
+		}
+		
+		if (colonOrCurly.isOperator() && colonOrCurly.getOperator() == Operator.SEMICOLON) {
+			
+			// A default getter is being defined
+		} else if (colonOrCurly.isOperator() && colonOrCurly.getOperator() == Operator.OPEN_BLOCK) {
+			
+			// The programmer creates a getter with a custom body
+		} else {
+			throw new ParsingException("Expected a ';' or '{' after setter " + name + ", but found " + colonOrCurly);
+		}
+	}
+
+	@Override
+	protected void defineInit(SourceFileReader reader, Set<Modifier> modifiers, String id)
+			throws IOException, ParsingException {
+		throw new ParsingException("I think I will allow inits in classes later");
+	}
+
+	@Override
+	protected void defineInterface(SourceFileReader reader, Set<Modifier> modifiers, String name)
+			throws IOException, ParsingException {
+		throw new ParsingException("Interfaces are not high on my priority list");
+	}
+
+	@Override
+	protected void defineMain(SourceFileReader reader, Set<Modifier> modifiers, String id)
+			throws IOException, ParsingException {
+		throw new ParsingException("I don't think I will allow mains in classes");
+	}
+
+	@Override
+	protected void defineNamespace(SourceFileReader reader, Set<Modifier> modifiers, String name)
+			throws IOException, ParsingException {
+		throw new ParsingException("I think I will allow namespaces in classes later");
+	}
+
+	@Override
+	protected void defineSetter(SourceFileReader reader, Set<Modifier> modifiers, String name)
+			throws IOException, ParsingException {
+		// TODO Parse setter
+	}
+
+	@Override
+	protected void defineVariable(SourceFileReader reader, SourceElement nextElement, Set<Modifier> modifiers,
+			TypeBuilder type, String name) throws IOException, ParsingException {
+		// TODO Add property or variable
 	}
 }

@@ -195,8 +195,9 @@ public class SmallParser {
 	
 	/**
 	 * This class represents a type that is either a variable type or an element type. Variable types are
-	 * types that a variable can have, like number, string and boolean. Element types are types of the
-	 * elements of the ArrayScript language, like class, namespace and variable.
+	 * types that a variable can have, like number, string and boolean. It is also possible that this type
+	 * holds the void return type. Element types are types of the elements of the ArrayScript language, like
+	 * class, namespace and variable.
 	 * 
 	 * This class was created for the method parseSomeType. It also contains the next source element that
 	 * was read because parseSomeType needs to read an extra source element.
@@ -223,14 +224,21 @@ public class SmallParser {
 		}
 		
 		/**
-		 * @return True if this is a variable type, false if it is an element type
+		 * @return True if this is a variable type, false if it is an element type or void
 		 */
 		public boolean isVariableType() {
 			return variableType != null;
 		}
 		
 		/**
-		 * @return True if this is an element type, false if it as a variable type
+		 * @return True if this is a valid function/method return type, false if it is an element type
+		 */
+		public boolean isReturnType() {
+			return !isElementType();
+		}
+		
+		/**
+		 * @return True if this is an element type, false if it as a variable type or void
 		 */
 		public boolean isElementType() {
 			return elementType != null;
@@ -238,11 +246,24 @@ public class SmallParser {
 		
 		/**
 		 * @return The variable type that this type holds if this type holds variable type
-		 * @throws UnsupportedOperationException If this type doesn't hold a variable type, but an element type
+		 * @throws UnsupportedOperationException If this type doesn't hold a variable type, but an element 
+		 * type or void return type
 		 */
 		public TypeBuilder getVariableType() throws UnsupportedOperationException {
-			if (variableType == null) {
+			if (!isVariableType()) {
 				throw new UnsupportedOperationException("This is not a variable type");
+			}
+			return variableType;
+		}
+		
+		/**
+		 * @return The return type that this type holds if this type holds a return type or null if this is
+		 * the void return type
+		 * @throws UnsupportedOperationException If this type doesn't hold a return type, but an element type
+		 */
+		public TypeBuilder getReturnType() throws UnsupportedOperationException {
+			if (!isReturnType()) {
+				throw new UnsupportedOperationException("This is not a return type");
 			}
 			return variableType;
 		}
@@ -252,7 +273,7 @@ public class SmallParser {
 		 * @throws UnsupportedOperationException If this type doesn't hold an element type, but a variable type
 		 */
 		public ElementType getElementType() throws UnsupportedOperationException {
-			if (elementType == null) {
+			if (!isElementType()) {
 				throw new UnsupportedOperationException("This is not an element type");
 			}
 			return elementType;

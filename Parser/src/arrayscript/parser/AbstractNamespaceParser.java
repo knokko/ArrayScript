@@ -98,12 +98,56 @@ abstract class AbstractNamespaceParser {
 	 */
 	protected abstract void defineGetter(SourceFileReader reader, Set<Modifier> modifiers, String name) throws IOException, ParsingException;
 	
+	/**
+	 * This method will be called when an init is about to be defined in this abstract namespace. The id/name
+	 * of the init will be read already, but the opening curly bracket will not be read already. The subclass
+	 * that is overriding this method should parse the init and register it to the application. If the init
+	 * can't be parsed or registered, a ParsingException should be thrown.
+	 * @param reader The reader that is reading this source file
+	 * @param modifiers The modifiers that the init should have
+	 * @param id The id that the init should have
+	 * @throws IOException If the provided reader throws an IOException
+	 * @throws ParsingException If the provided reader throws a ParsingException, the init is not defined
+	 * correctly or if the init can't be registered to the application builder
+	 */
 	protected abstract void defineInit(SourceFileReader reader, Set<Modifier> modifiers, String id) throws IOException, ParsingException;
 	
-	protected abstract void defineInterface(SourceFileReader reader, Set<Modifier> modifiers, String id) throws IOException, ParsingException;
+	/**
+	 * This method will be called when an interface is about to be defined. The name of the interface will
+	 * already be read, but the opening curly bracket will not be read yet. The subclass that overrides this
+	 * method should try to parse the interface and add it. If the interface is not defined correctly or
+	 * can't be added, a ParsingException should be thrown.
+	 * @param reader The reader that is reading this source file
+	 * @param modifiers The modifiers that the interface should get
+	 * @param name The name that the interface should get
+	 * @throws IOException If the provided reader throws an IOException
+	 * @throws ParsingException If the provided reader throws a ParsingException, the interface is not
+	 * defined correctly or the interface can't be added.
+	 */
+	protected abstract void defineInterface(SourceFileReader reader, Set<Modifier> modifiers, String name) throws IOException, ParsingException;
 	
+	/**
+	 * This method will be called when a main is about to be defined. The id of the main will already be
+	 * read, but the opening curly bracket will not be read already. The subclass that overrides this method
+	 * should parse the main body and register the main to the app builder. If the main is not defined
+	 * correctly or can't be registered, a ParsingException should be thrown.
+	 * @param reader The reader that is reading this source file
+	 * @param modifiers The modifiers that the main should get
+	 * @param id The id that the main should get
+	 * @throws IOException If the provided reader throws an IOException
+	 * @throws ParsingException The the provided reader throws a ParsingException, the main is not defined
+	 * correctly or the main can't be registered
+	 */
 	protected abstract void defineMain(SourceFileReader reader, Set<Modifier> modifiers, String id) throws IOException, ParsingException;
 	
+	/**
+	 * 
+	 * @param reader
+	 * @param modifiers
+	 * @param name
+	 * @throws IOException
+	 * @throws ParsingException
+	 */
 	protected abstract void defineNamespace(SourceFileReader reader, Set<Modifier> modifiers, String name) throws IOException, ParsingException;
 	
 	protected abstract void defineSetter(SourceFileReader reader, Set<Modifier> modifiers, String name) throws IOException, ParsingException;
@@ -233,9 +277,11 @@ abstract class AbstractNamespaceParser {
 						}
 						
 						if (maybeBracket.isOperator() && maybeBracket.getOperator() == Operator.OPEN_BRACKET) {
-							defineFunction(reader, modifiers, nextType.getVariableType(), name);
-						} else {
+							defineFunction(reader, modifiers, nextType.getReturnType(), name);
+						} else if (nextType.isVariableType()){
 							defineVariable(reader, maybeBracket, modifiers, nextType.getVariableType(), name);
+						} else {
+							throw new ParsingException("void can only be used as function return type, but not as variable type");
 						}
 					} else {
 						throw new ParsingException("A name for " + nextType + " was expected, but got " + nameElement);

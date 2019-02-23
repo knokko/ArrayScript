@@ -1,13 +1,21 @@
 package arrayscript.parser.builder;
 
+import java.util.Set;
+
+import arrayscript.lang.Modifier;
 import arrayscript.lang.element.Element;
+import arrayscript.lang.element.ElementTypes;
 import arrayscript.parser.builder.param.ParamsBuilder;
 import arrayscript.parser.builder.var.type.TypeBuilder;
 import arrayscript.parser.executable.ExecutableBuilder;
+import arrayscript.parser.util.ParsingException;
+import arrayscript.util.Checks;
 
 public class FunctionBuilder implements ElementBuilder {
 	
 	private final String name;
+	
+	private final Set<Modifier> modifiers;
 	
 	private final TypeBuilder returnType;
 	
@@ -15,8 +23,17 @@ public class FunctionBuilder implements ElementBuilder {
 	
 	private final ExecutableBuilder body;
 	
-	public FunctionBuilder(String name, TypeBuilder returnType, ParamsBuilder parameters, ExecutableBuilder body) {
+	public FunctionBuilder(String name, Set<Modifier> modifiers, TypeBuilder returnType, ParamsBuilder parameters, ExecutableBuilder body) throws ParsingException {
+		Checks.noNull(modifiers);
+		Checks.notNull(parameters);
+		Checks.notNull(body);
+		for (Modifier modifier : modifiers) {
+			if (!ElementTypes.FUNCTION.canHave(modifier)) {
+				throw new ParsingException("Functions can't have the " + modifier + " modifier");
+			}
+		}
 		this.name = name;
+		this.modifiers = modifiers;
 		this.returnType = returnType;
 		this.parameters = parameters;
 		this.body = body;
@@ -24,6 +41,10 @@ public class FunctionBuilder implements ElementBuilder {
 	
 	public String getName() {
 		return name;
+	}
+	
+	public Set<Modifier> getModifiers(){
+		return modifiers;
 	}
 	
 	public TypeBuilder getReturnType() {

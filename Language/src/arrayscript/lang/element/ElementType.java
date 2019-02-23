@@ -227,7 +227,9 @@ public abstract class ElementType {
 
 		@Override
 		public boolean canHave(Modifier modifier) {
-			return modifier == Modifier.CONST || modifier == Modifier.STATIC || modifier == Modifier.DEFINE || modifier.isVisibility();
+			// Don't allow static because the static modifier is a bit fake
+			// 'Methods' will the static modifier will be turned into a function
+			return modifier == Modifier.CONST || modifier == Modifier.DEFINE || modifier.isVisibility();
 		}
 
 		@Override

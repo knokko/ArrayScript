@@ -17,7 +17,8 @@ public class ParamsParser {
 	/**
 	 * Attempts to parse the given parameters. The initial '(' (that starts the function declaration) should
 	 * already be read. This method only determines the type name and parameter name of every parameter, it 
-	 * doesn't try to find the actual type. (That must be done in a later parsing stage.)
+	 * doesn't try to find the actual type. (That must be done in a later parsing stage.) This method will
+	 * read the closing ')'.
 	 * @param reader The source file reader to read the
 	 * @return An instance of ParamsBuilder that represents the given parameters
 	 * @throws ParsingException If the given parameters do not have the right syntax

@@ -1,5 +1,7 @@
 package arrayscript.util;
 
+import java.util.Collection;
+
 /**
  * Utility class that contains fast checks for bad parameters like null values
  * @author knokko
@@ -51,6 +53,32 @@ public class Checks {
 	 * @throws NullPointerException If the array or an element in the array is null
 	 */
 	public static void noNull(Object[] elements) throws NullPointerException {
+		noNull(elements, "elements");
+	}
+	
+	/**
+	 * Checks if the given collection is null or contains null elements. Throws a NullPointerException if so,
+	 * returns silently if not.
+	 * @param elements The collection to check
+	 * @param name The name to add to the exception message when the collection is null or contains null
+	 * @throws NullPointerException If the given collection is null or contains null
+	 */
+	public static void noNull(Collection<?> elements, String name) throws NullPointerException {
+		notNull(elements, name);
+		for (Object element : elements) {
+			if (element == null) {
+				throw new NullPointerException(name + " contains null");
+			}
+		}
+	}
+	
+	/**
+	 * Checks if the given collection is null or contains null elements. Throws a NullPointerException if so,
+	 * returns silently if not.
+	 * @param elements The collection to check
+	 * @throws NullPointerException If the given collection is null or contains null
+	 */
+	public static void noNull(Collection<?> elements) throws NullPointerException {
 		noNull(elements, "elements");
 	}
 }
