@@ -177,7 +177,7 @@ public class NamespaceParser extends AbstractNamespaceParser {
 							List<SourceElement> unparsedValueList = SmallParser.readUntilSemiColon(reader);
 							
 							// Observe that the semicolon was consumed by the readUntilSemiColon call
-							namespace.createVariable(name, nextType.getVariableType(), new ValueBuilder(unparsedValueList));
+							namespace.createVariable(name, nextType.getVariableType(), modifiers, new ValueBuilder(unparsedValueList));
 						} else if (maybeBracket.getOperator() == Operator.OPEN_BRACKET) {
 
 							// Read the initial parameters and body
@@ -199,7 +199,7 @@ public class NamespaceParser extends AbstractNamespaceParser {
 							// Gather the body
 							List<SourceElement> body = ExecutableParser.parseInitial(reader);
 
-							namespace.createFunction(name, nextType.getVariableType(), parameters, body);
+							namespace.createFunction(name, nextType.getVariableType(), modifiers, parameters, body);
 						} else {
 
 							// Either ( to declare function or = to declare the value
@@ -267,7 +267,7 @@ public class NamespaceParser extends AbstractNamespaceParser {
 		// Gather the body
 		List<SourceElement> body = ExecutableParser.parseInitial(reader);
 
-		namespace.createFunction(name, type, parameters, body);
+		namespace.createFunction(name, type, modifiers, parameters, body);
 	}
 
 	@Override
@@ -314,6 +314,6 @@ public class NamespaceParser extends AbstractNamespaceParser {
 		List<SourceElement> unparsedValueList = SmallParser.readUntilSemiColon(reader);
 		
 		// Observe that the semicolon was consumed by the readUntilSemiColon call
-		namespace.createVariable(name, type, new ValueBuilder(unparsedValueList));
+		namespace.createVariable(name, type, modifiers, new ValueBuilder(unparsedValueList));
 	}
 }

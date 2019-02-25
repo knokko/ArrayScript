@@ -9,6 +9,7 @@ import arrayscript.parser.builder.AppBuilder;
 import arrayscript.parser.builder.ClassBuilder;
 import arrayscript.parser.builder.param.ParamsBuilder;
 import arrayscript.parser.builder.var.type.TypeBuilder;
+import arrayscript.parser.builder.var.value.ValueBuilder;
 import arrayscript.parser.executable.ExecutableBuilder;
 import arrayscript.parser.source.SourceElement;
 import arrayscript.parser.source.reading.SourceFileReader;
@@ -75,9 +76,8 @@ public class ClassParser extends AbstractNamespaceParser {
 		ExecutableBuilder body = new ExecutableBuilder(ExecutableParser.parseInitial(reader));
 		
 		// If static add function, otherwise add method
-		if (modifiers.contains(Modifier.STATIC)) {
+		if (modifiers.remove(Modifier.STATIC)) {
 			
-			modifiers.remove(Modifier.STATIC);
 			classBuilder.addFunction(name, modifiers, type, parameters, body);
 		} else {
 			classBuilder.addMethod(name, modifiers, type, parameters, body);
@@ -87,7 +87,6 @@ public class ClassParser extends AbstractNamespaceParser {
 	@Override
 	protected void defineGetter(SourceFileReader reader, Set<Modifier> modifiers, String name)
 			throws IOException, ParsingException {
-		// TODO parse getter
 		SourceElement colonOrCurly = reader.next();
 		
 		if (colonOrCurly == null) {
@@ -97,9 +96,11 @@ public class ClassParser extends AbstractNamespaceParser {
 		if (colonOrCurly.isOperator() && colonOrCurly.getOperator() == Operator.SEMICOLON) {
 			
 			// A default getter is being defined
+			classBuilder.addDefaultGetter(name, modifiers);
 		} else if (colonOrCurly.isOperator() && colonOrCurly.getOperator() == Operator.OPEN_BLOCK) {
 			
 			// The programmer creates a getter with a custom body
+			classBuilder.addCustomGetter(name, modifiers, new ExecutableBuilder(ExecutableParser.parseInitial(reader)));
 		} else {
 			throw new ParsingException("Expected a ';' or '{' after setter " + name + ", but found " + colonOrCurly);
 		}
@@ -138,6 +139,33 @@ public class ClassParser extends AbstractNamespaceParser {
 	@Override
 	protected void defineVariable(SourceFileReader reader, SourceElement nextElement, Set<Modifier> modifiers,
 			TypeBuilder type, String name) throws IOException, ParsingException {
-		// TODO Add property or variable
+		ValueBuilder defaultValue;
+		
+		// The value is directly being defined
+		if (nextElement.isOperator() && nextElement.getOperator() == Operator.ASSIGNMENT) {
+			defaultValue = new ValueBuilder(SmallParser.readUntilSemiColon(reader));
+		}
+		
+		// No default value is given, only allow this on properties, not on variables
+		else if (nextElement.isOperator() && nextElement.getOperator() == Operator.SEMICOLON) {
+			defaultValue = null;
+		}
+		
+		// Just don't allow anything else
+		else {
+			throw new ParsingException("Expected ';' or '=', but found " + nextElement);
+		}
+		if (modifiers.remove(Modifier.STATIC)) {
+			
+			// A variable is being declared
+			if (defaultValue == null) {
+				throw new ParsingException("Static class properties need an initial value");
+			}
+			classBuilder.addVariable(name, modifiers, type, defaultValue);
+		} else {
+			
+			// A property is being declared
+			classBuilder.addProperty(name, type, modifiers, defaultValue);
+		}
 	}
 }

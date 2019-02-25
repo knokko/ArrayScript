@@ -280,7 +280,7 @@ public abstract class ElementType {
 
 		@Override
 		public boolean canHave(Modifier modifier) {
-			return modifier == Modifier.DEFINE || modifier == Modifier.CONST || modifier == Modifier.STATIC || modifier.isVisibility();
+			return modifier == Modifier.DEFINE || modifier == Modifier.CONST || modifier.isVisibility();
 		}
 
 		@Override
@@ -306,7 +306,7 @@ public abstract class ElementType {
 		@Override
 		public boolean canHave(Modifier modifier) {
 			return modifier == Modifier.DEFINE || modifier == Modifier.CONST 
-					|| modifier == Modifier.IMPLICIT || modifier == Modifier.STATIC || modifier.isVisibility();
+					|| modifier == Modifier.IMPLICIT || modifier.isVisibility();
 		}
 
 		@Override

@@ -144,18 +144,19 @@ public class NamespaceBuilder implements ElementBuilder {
 	 * the name of the type is known.)
 	 * @param name The name of the variable to add
 	 * @param type The (unfinished) type of the variable
+	 * @param modifiers The modifiers that the variable should get
 	 * @param value The (unfinished) initial value of the variable
 	 * @return The variable builder for the new variable
 	 * @throws ParsingException If this namespace already has an element with the given name
 	 */
-	public VariableBuilder createVariable(String name, TypeBuilder type, ValueBuilder value) throws ParsingException {
+	public VariableBuilder createVariable(String name, TypeBuilder type, Set<Modifier> modifiers, ValueBuilder value) throws ParsingException {
 		
 		// I don't want multiple elements with the same name
 		if (hasElement(name)) {
 			throw new ParsingException("Multiple elements with name '" + name + "' in namespace " + this);
 		}
 		
-		VariableBuilder varBuilder = new VariableBuilder(type, name, value);
+		VariableBuilder varBuilder = new VariableBuilder(modifiers, type, name, value);
 		elements.add(varBuilder);
 		variables.add(varBuilder);
 		return varBuilder;
@@ -168,12 +169,13 @@ public class NamespaceBuilder implements ElementBuilder {
 	 * function will be returned. If not, a ParsingException will be thrown.
 	 * @param name The name of the function to add
 	 * @param returnType The (unfinished) return type of the function to add
+	 * @param modifiers The modifiers that the function should have
 	 * @param parameters The (unfinished) parameters of the function to add
 	 * @param body The (unfinished) body of the function to add
 	 * @return The function builder for the new function
 	 * @throws ParsingException If the function could not be added
 	 */
-	public FunctionBuilder createFunction(String name, TypeBuilder returnType, ParamsBuilder parameters, List<SourceElement> body) throws ParsingException {
+	public FunctionBuilder createFunction(String name, TypeBuilder returnType, Set<Modifier> modifiers, ParamsBuilder parameters, List<SourceElement> body) throws ParsingException {
 		
 		// It is allowed to have multiple functions with the same name as long as they have different params
 		for (ElementBuilder element : elements) {
@@ -182,7 +184,7 @@ public class NamespaceBuilder implements ElementBuilder {
 			}
 		}
 		
-		FunctionBuilder functionBuilder = new FunctionBuilder(name, returnType, parameters, new ExecutableBuilder(body));
+		FunctionBuilder functionBuilder = new FunctionBuilder(name, modifiers, returnType, parameters, new ExecutableBuilder(body));
 		elements.add(functionBuilder);
 		functions.add(functionBuilder);
 		return functionBuilder;

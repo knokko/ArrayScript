@@ -9,6 +9,7 @@ import arrayscript.lang.element.Element;
 import arrayscript.lang.element.ElementTypes;
 import arrayscript.parser.builder.param.ParamsBuilder;
 import arrayscript.parser.builder.var.type.TypeBuilder;
+import arrayscript.parser.builder.var.value.ValueBuilder;
 import arrayscript.parser.executable.ExecutableBuilder;
 import arrayscript.parser.util.ParsingException;
 
@@ -23,6 +24,7 @@ public class ClassBuilder implements ElementBuilder {
 	private final Collection<VariableBuilder> variables;
 	private final Collection<MethodBuilder> methods;
 	private final Collection<PropertyBuilder> properties;
+	private final Collection<GetterBuilder> getters;
 	
 	public ClassBuilder(String name, NamespaceBuilder namespace, Set<Modifier> modifiers) throws ParsingException {
 		this.name = name;
@@ -40,6 +42,7 @@ public class ClassBuilder implements ElementBuilder {
 		this.variables = new ArrayList<VariableBuilder>(2);
 		this.methods = new ArrayList<MethodBuilder>(20);
 		this.properties = new ArrayList<PropertyBuilder>(10);
+		this.getters = new ArrayList<GetterBuilder>(5);
 	}
 	
 	@Override
@@ -111,10 +114,90 @@ public class ClassBuilder implements ElementBuilder {
 			}
 		}
 		
+		// Don't allow ambiguity between method calls and getter class
+		for (GetterBuilder getter : getters) {
+			if (getter.getMethodName().equals(name)) {
+				throw new ParsingException("The method " + name + " will have the same effective name as a getter in class " + this.name);
+			}
+		}
+		
 		MethodBuilder method = new MethodBuilder(name, returnType, parameters, body, modifiers);
 		elements.add(method);
 		methods.add(method);
 	}
 	
-	// TODO Create method to add variables or properties
+	/**
+	 * Attempts to add a variable with the given name, modifiers, type and default value to this class
+	 * builder. The given modifiers should NOT contain the static modifier, it should only be used to
+	 * distinguish variables from properties, which already happened because this method is being called and
+	 * not the addProperty method. The type and default value do not have to be fully resolved already, 
+	 * that will be done in a later parsing stage.
+	 * @param name The name of the variable to add
+	 * @param modifiers The modifiers of the variable to add, excluding the static modifier
+	 * @param type The type of the variable to add, possibly unfinished/unresolved
+	 * @param defaultValue The default value of the variable, possibly unfinished/unresolved
+	 * @throws ParsingException If the variable can't be added to this class builder
+	 */
+	public void addVariable(String name, Set<Modifier> modifiers, TypeBuilder type, ValueBuilder defaultValue) throws ParsingException {
+		for (VariableBuilder var : variables) {
+			if (var.getName().equals(name)) {
+				throw new ParsingException("Two variables in class " + this.name + " share the name " + name);
+			}
+		}
+		
+		VariableBuilder var = new VariableBuilder(modifiers, type, name, defaultValue);
+		elements.add(var);
+		variables.add(var);
+	}
+	
+	/**
+	 * Attempts to add a property with the given name, (unfinished) type, modifiers and (unfinished) default
+	 * value to this class builder. The type and defautl value do not have to be resolved/finished
+	 * completely, this will be finished at a later parsing stage. The default value is allowed to be null,
+	 * in that case, this property will not have a default value.
+	 * @param name The name of the property to add
+	 * @param type The (unfinished) type of the property to add
+	 * @param modifiers The modifiers of the property to add
+	 * @param defaultValue The optional (unfinished) default value of the property to add
+	 * @throws ParsingException If the property can't be added to this class builder
+	 */
+	public void addProperty(String name, TypeBuilder type, Set<Modifier> modifiers, ValueBuilder defaultValue) throws ParsingException {
+		for (PropertyBuilder property : properties) {
+			if (property.getName().equals(name)) {
+				throw new ParsingException("Two properties of class " + this.name + " have the same name");
+			}
+		}
+		
+		PropertyBuilder prop = new PropertyBuilder(name, type, modifiers, defaultValue);
+		elements.add(prop);
+		properties.add(prop);
+	}
+	
+	public void addDefaultGetter(String name, Set<Modifier> modifiers) throws ParsingException {
+		addGetter(new GetterBuilder(name, modifiers));
+	}
+	
+	public void addCustomGetter(String name, Set<Modifier> modifiers, ExecutableBuilder body) throws ParsingException {
+		addGetter(new GetterBuilder(name, modifiers, body));
+	}
+	
+	private void addGetter(GetterBuilder getter) throws ParsingException {
+		
+		// Don't allow ambiguity between getters and methods that will have the same effective name
+		for (MethodBuilder method : methods) {
+			if (method.getName().equals(getter.getMethodName())) {
+				throw new ParsingException("The method " + method.getName() + " conflicts with a getter");
+			}
+		}
+		
+		// Don't allow two getters with the same name
+		for (GetterBuilder get : getters) {
+			if (get.getPropertyName().equals(getter.getPropertyName())) {
+				throw new ParsingException("Multiple getters for property " + getter.getPropertyName() + " in class " + this.name);
+			}
+		}
+		
+		elements.add(getter);
+		getters.add(getter);
+	}
 }

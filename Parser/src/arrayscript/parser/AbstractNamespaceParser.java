@@ -141,17 +141,50 @@ abstract class AbstractNamespaceParser {
 	protected abstract void defineMain(SourceFileReader reader, Set<Modifier> modifiers, String id) throws IOException, ParsingException;
 	
 	/**
-	 * 
-	 * @param reader
-	 * @param modifiers
-	 * @param name
-	 * @throws IOException
-	 * @throws ParsingException
+	 * This method will be called when a namespace is about to be defined in this abstract namespace. The
+	 * name and modifiers of the namespace will be read already, but the opening curly bracket won't be read
+	 * already. Determining whether or not a namespace (with the given name) can be defined is up to the
+	 * subclass that overrides this method. If the namespace was added successfully, this method will return
+	 * silently. If the namespace can't be added, a ParsingException will be thrown.
+	 * @param reader The source file reader that is reading the current source file
+	 * @param modifiers The modifiers the namespace should get
+	 * @param name The name the namespace should get
+	 * @throws IOException If the provided reader throws an IOException
+	 * @throws ParsingException If the provided reader throws a ParsingException, the namespace is not
+	 * defined correctly or the namespace can't be added
 	 */
 	protected abstract void defineNamespace(SourceFileReader reader, Set<Modifier> modifiers, String name) throws IOException, ParsingException;
 	
+	/**
+	 * This method will be called when a setter with the given name and modifiers is about to be defined.
+	 * The name and modifiers will be read already, but the ';' or '(' will not be read already. Determining
+	 * if the setter can be added and parsing the setter is up to the subclass that is overriding this
+	 * method. If the setter was added successfully, this method should return silently. If not, a
+	 * ParsingException should be thrown.
+	 * @param reader The reader that is reading the current source file
+	 * @param modifiers The modifiers that should be given to the setter
+	 * @param name The name of the setter
+	 * @throws IOException If the provided reader throws an IOException
+	 * @throws ParsingException If the provided reader throws a ParsingException, the setter is not defined
+	 * correctly or if the setter can't be added
+	 */
 	protected abstract void defineSetter(SourceFileReader reader, Set<Modifier> modifiers, String name) throws IOException, ParsingException;
 	
+	/**
+	 * This method will be called when a variable is about to be declared. The name, type and modifiers will
+	 * be read already and the ';' or '=' will be kept in the nextElement parameter. Parsing the initial 
+	 * value and and determining if the variable can be added is up to the subclass that overrides this 
+	 * method. If the variable was added successfully, this should return silently. If not, a 
+	 * ParsingException should be thrown.
+	 * @param reader The reader that is reading the current source file
+	 * @param nextElement The source element right after the name that is probably a ';' or '='
+	 * @param modifiers The modifiers of the variable to add
+	 * @param type The (unfinished) type of the variable to add
+	 * @param name The name of the variable to add
+	 * @throws IOException If the provided reader throws an IOException
+	 * @throws ParsingException If the provided reader throws a ParsingException, the variable is not
+	 * defined correctly or the variable can't be added
+	 */
 	protected abstract void defineVariable(SourceFileReader reader, SourceElement nextElement, Set<Modifier> modifiers, TypeBuilder type, String name) throws IOException, ParsingException;
 	
 	protected void assumeOperator(SourceElement nextElement, Operator operator) throws ParsingException {
