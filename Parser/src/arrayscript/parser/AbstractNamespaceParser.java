@@ -41,11 +41,11 @@ abstract class AbstractNamespaceParser {
 	
 	/**
 	 * This method will be called when a constructor is about to be defined in this abstract namespace. It
-	 * will be called after the reader has read the 'constructor' keyword, but before the opening bracket is
-	 * read. It is up to the subclass that overrides this method to determine whether a constructor with the
-	 * given modifiers can be defined. If that is not allowed, a ParsingException should be thrown. A
-	 * ParsingException should also be thrown if the parameters or body of the constructor are not defined
-	 * correctly.
+	 * will be called after the reader has read the 'constructor' keyword and the opening '(', but before any
+	 * parameters are read. It is up to the subclass that overrides this method to determine whether a 
+	 * constructor with the given modifiers can be defined. If that is not allowed, a ParsingException should
+	 * be thrown. Also, a ParsingException should also be thrown if the parameters, body or head of 
+	 * constructor are not defined correctly.
 	 * @param reader The reader that is reading the constructor
 	 * @param modifiers The modifiers that the constructor should have
 	 * @throws IOException If the provided reader throws an IOException
@@ -287,6 +287,16 @@ abstract class AbstractNamespaceParser {
 
 						// Currently, constructor is the only element type that doesn't require a name
 						if (type == ElementTypes.CONSTRUCTOR) {
+							
+							// Constructor keyword should be followed by an opening bracket
+							SourceElement openBracket = nextType.getNext();
+							if (openBracket == null) {
+								throw new ParsingException("Expected '(', but end of file was reached");
+							}
+							if (!openBracket.isOperator() || openBracket.getOperator() != Operator.OPEN_BRACKET) {
+								throw new ParsingException("Expected '(', but found " + openBracket);
+							}
+							
 							defineConstructor(reader, modifiers);
 						} else {
 							throw new Error("It looks like I forgot element type " + type.getName());

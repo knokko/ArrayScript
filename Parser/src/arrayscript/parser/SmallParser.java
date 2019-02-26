@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import arrayscript.lang.Keyword;
 import arrayscript.lang.Modifier;
 import arrayscript.lang.Operator;
 import arrayscript.lang.element.ElementType;
@@ -13,6 +14,7 @@ import arrayscript.parser.builder.var.type.TypeBuilder;
 import arrayscript.parser.source.SourceElement;
 import arrayscript.parser.source.reading.SourceFileReader;
 import arrayscript.parser.util.ParsingException;
+import arrayscript.util.Checks;
 
 /**
  * A utility class that parses fragments of source code. This class is useful because it keeps the namespace
@@ -192,6 +194,10 @@ public class SmallParser {
 				return new SomeType(new TypeBuilder(first.getKeyword().getPrimitiveType()), reader.next());
 			}
 			
+			else if (first.getKeyword() == Keyword.VOID) {
+				return new SomeType((TypeBuilder) null, reader.next());
+			}
+			
 			// Not a type or element type
 			else {
 				throw new ParsingException("Unexpected keyword " + first);
@@ -263,6 +269,7 @@ public class SmallParser {
 		}
 		
 		private SomeType(ElementType type, SourceElement next) {
+			Checks.notNull(type);
 			this.variableType = null;
 			this.elementType = type;
 			this.next = next;

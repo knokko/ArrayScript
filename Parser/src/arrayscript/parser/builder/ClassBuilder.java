@@ -174,7 +174,12 @@ public class ClassBuilder implements ElementBuilder {
 			}
 		}
 		
-		PropertyBuilder prop = new PropertyBuilder(name, type, modifiers, defaultValue);
+		PropertyBuilder prop;
+		if (defaultValue != null) {
+			prop = new PropertyBuilder(name, type, modifiers, defaultValue);
+		} else {
+			prop = new PropertyBuilder(name, type, modifiers);
+		}
 		elements.add(prop);
 		properties.add(prop);
 	}

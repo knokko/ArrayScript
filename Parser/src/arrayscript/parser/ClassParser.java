@@ -58,13 +58,6 @@ public class ClassParser extends AbstractNamespaceParser {
 	@Override
 	protected void defineConstructor(SourceFileReader reader, Set<Modifier> modifiers)
 			throws IOException, ParsingException {
-		SourceElement openBracket = reader.next();
-		if (openBracket == null) {
-			throw new ParsingException("Expected '(', but end of file was reached");
-		}
-		if (!openBracket.isOperator() || openBracket.getOperator() != Operator.OPEN_BRACKET) {
-			throw new ParsingException("Expected '(', but found " + openBracket);
-		}
 		
 		ParamsBuilder params = ParamsParser.parse(reader);
 		
