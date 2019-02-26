@@ -130,6 +130,51 @@ public class SmallParser {
 		}
 	}
 	
+	/**
+	 * Reads all source elements until the closing '}' and stores them in a list. If a new code block is
+	 * being opened within the current code block, the complete code block including its curly brackets
+	 * will be added to the list as well. The closing '}' will be read, but not added to the list. This
+	 * method assumes that the opening '{' is already read.
+	 * @param reader The reader that is reading the code block
+	 * @return A list containing all source elements until the closing '}' (exclusive)
+	 * @throws IOException If the provided reader throws an IOException
+	 * @throws ParsingException If the provided reader throws a ParsingException or end of file is reached
+	 */
+	public static List<SourceElement> readBlock(SourceFileReader reader) throws IOException, ParsingException {
+		
+		// Store all source elements here
+		List<SourceElement> elements = new ArrayList<SourceElement>(40);
+		
+		// Keep track of the depth (the number of opening curly brackets - closing curly brackets)
+		int depth = 0;
+		
+		// Breaking upon finding closing curly is easier than using a real loop condition
+		while (true) {
+			SourceElement next = reader.next();
+			if (next == null) {
+				throw new ParsingException("End of file was reached before block was finished");
+			}
+			if (next.isOperator()) {
+				if (next.getOperator() == Operator.CLOSE_BLOCK) {
+					
+					// If we are in the 'surface' of the block, exit
+					if (depth == 0) {
+						break;
+					}
+					
+					// Else we move closer to 'surface'
+					depth--;
+				} else if (next.getOperator() == Operator.OPEN_BLOCK) {
+					depth++;
+				}
+			}
+			
+			// Intentionally don't add the closing '}'
+			elements.add(next);
+		}
+		return elements;
+	}
+	
 	public static SomeType parseSomeType(SourceFileReader reader) throws IOException, ParsingException {
 		
 		SourceElement first = reader.next();

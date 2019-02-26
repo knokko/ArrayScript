@@ -1,6 +1,7 @@
 package arrayscript.parser;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Set;
 
 import arrayscript.lang.Modifier;
@@ -57,7 +58,37 @@ public class ClassParser extends AbstractNamespaceParser {
 	@Override
 	protected void defineConstructor(SourceFileReader reader, Set<Modifier> modifiers)
 			throws IOException, ParsingException {
-		// TODO Parse constructor
+		SourceElement openBracket = reader.next();
+		if (openBracket == null) {
+			throw new ParsingException("Expected '(', but end of file was reached");
+		}
+		if (!openBracket.isOperator() || openBracket.getOperator() != Operator.OPEN_BRACKET) {
+			throw new ParsingException("Expected '(', but found " + openBracket);
+		}
+		
+		ParamsBuilder params = ParamsParser.parse(reader);
+		
+		SourceElement openCurly = reader.next();
+		if (openCurly == null) {
+			throw new ParsingException("Expected '{', but end of file was reached");
+		}
+		if (!openCurly.isOperator() || openCurly.getOperator() != Operator.OPEN_BLOCK) {
+			throw new ParsingException("Expected '{', but found " + openCurly);
+		}
+		
+		List<SourceElement> head = SmallParser.readBlock(reader);
+		
+		openCurly = reader.next();
+		if (openCurly == null) {
+			throw new ParsingException("Expected the '{' to start the constructor body, but end of file was reached");
+		}
+		if (!openCurly.isOperator() || openCurly.getOperator() != Operator.OPEN_BLOCK) {
+			throw new ParsingException("Expected the '{' to start the constructor body, but found " + openCurly);
+		}
+		
+		ExecutableBuilder body = new ExecutableBuilder(ExecutableParser.parseInitial(reader));
+		
+		classBuilder.addConstructor(modifiers, params, head, body);
 	}
 
 	@Override
@@ -90,7 +121,7 @@ public class ClassParser extends AbstractNamespaceParser {
 		SourceElement colonOrCurly = reader.next();
 		
 		if (colonOrCurly == null) {
-			throw new ParsingException("Expected a ';' or '{' after setter " + name + ", but end of file was reached");
+			throw new ParsingException("Expected a ';' or '{' after getter " + name + ", but end of file was reached");
 		}
 		
 		if (colonOrCurly.isOperator() && colonOrCurly.getOperator() == Operator.SEMICOLON) {
@@ -102,7 +133,7 @@ public class ClassParser extends AbstractNamespaceParser {
 			// The programmer creates a getter with a custom body
 			classBuilder.addCustomGetter(name, modifiers, new ExecutableBuilder(ExecutableParser.parseInitial(reader)));
 		} else {
-			throw new ParsingException("Expected a ';' or '{' after setter " + name + ", but found " + colonOrCurly);
+			throw new ParsingException("Expected a ';' or '{' after getter " + name + ", but found " + colonOrCurly);
 		}
 	}
 
@@ -133,7 +164,23 @@ public class ClassParser extends AbstractNamespaceParser {
 	@Override
 	protected void defineSetter(SourceFileReader reader, Set<Modifier> modifiers, String name)
 			throws IOException, ParsingException {
-		// TODO Parse setter
+		SourceElement colonOrCurly = reader.next();
+		
+		if (colonOrCurly == null) {
+			throw new ParsingException("Expected a ';' or '{' after setter " + name + ", but end of file was reached");
+		}
+		
+		if (colonOrCurly.isOperator() && colonOrCurly.getOperator() == Operator.SEMICOLON) {
+			
+			// A default getter is being defined
+			classBuilder.addDefaultSetter(name, modifiers);
+		} else if (colonOrCurly.isOperator() && colonOrCurly.getOperator() == Operator.OPEN_BLOCK) {
+			
+			// The programmer creates a getter with a custom body
+			classBuilder.addCustomSetter(name, modifiers, new ExecutableBuilder(ExecutableParser.parseInitial(reader)));
+		} else {
+			throw new ParsingException("Expected a ';' or '{' after setter " + name + ", but found " + colonOrCurly);
+		}
 	}
 
 	@Override
