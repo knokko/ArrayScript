@@ -15,6 +15,7 @@ public class SetterBuilder implements ElementBuilder {
 	private final String methodName;
 	private final Set<Modifier> modifiers;
 	
+	private String paramName;
 	private ExecutableBuilder body;
 	
 	public SetterBuilder(String propertyName, Set<Modifier> modifiers) throws ParsingException {
@@ -31,10 +32,12 @@ public class SetterBuilder implements ElementBuilder {
 		this.methodName = "set" + Character.toUpperCase(name.charAt(0)) + name.substring(1);
 	}
 	
-	public SetterBuilder(String propertyName, Set<Modifier> modifiers, ExecutableBuilder body) throws ParsingException {
+	public SetterBuilder(String propertyName, Set<Modifier> modifiers, String paramName, ExecutableBuilder body) throws ParsingException {
 		this(propertyName, modifiers);
+		Checks.notNull(paramName);
 		Checks.notNull(body);
 		this.body = body;
+		this.paramName = paramName;
 	}
 
 	@Override

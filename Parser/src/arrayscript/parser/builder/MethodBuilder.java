@@ -62,6 +62,20 @@ public class MethodBuilder implements ElementBuilder {
 		}
 	}
 	
+	/**
+	 * Gets a 'nice' string representation of the return type of this method. If this method has a return type
+	 * , it's readable name will be returned. If this method doesn't have a return type, "void" will be
+	 * returned.
+	 * @return A string representation of the return type of this method
+	 */
+	public String getReturnTypeName() {
+		if (returnType == null) {
+			return "void";
+		} else {
+			return returnType.getReadableTypeName();
+		}
+	}
+	
 	public ParamsBuilder getParameters() {
 		return params;
 	}

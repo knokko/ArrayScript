@@ -208,15 +208,9 @@ abstract class AbstractNamespaceParser {
 			// End of file is reached before the closing curly bracket
 			if (first == null) {
 				
+				// Give the subclass the opportunity to throw an exception or commit changes
 				endOfFileBeforeClosed();
-				
-				/*
-				// The global namespace can not be closed explicitly and can be continued in the next file
-				if (namespace.isGlobal()) {
-					return;
-				} else {
-					throw new ParsingException("Unclosed namespace " + namespace);
-				}*/
+				return;
 			}
 
 			if (first.isOperator()) {

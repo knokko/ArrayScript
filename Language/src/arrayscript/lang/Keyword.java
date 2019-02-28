@@ -47,6 +47,8 @@ public enum Keyword {
 	UINT8(null, PrimitiveTypes.UINT8, null),
 	UINT16(null, PrimitiveTypes.UINT16, null),
 	UINT32(null, PrimitiveTypes.UINT32, null),
+	FLOAT32(null, PrimitiveTypes.FLOAT32, null),
+	FLOAT64(null, PrimitiveTypes.FLOAT64, null),
 	
 	// Not really a variable type, but it is a function/method return type
 	VOID(null, null, null),

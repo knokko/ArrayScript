@@ -55,6 +55,14 @@ public class GetterBuilder implements ElementBuilder {
 		return methodName;
 	}
 	
+	public Set<Modifier> getModifiers(){
+		return modifiers;
+	}
+	
+	public boolean hasCustomBody() {
+		return body != null;
+	}
+	
 	public boolean isImplicit() {
 		return modifiers.contains(Modifier.IMPLICIT);
 	}

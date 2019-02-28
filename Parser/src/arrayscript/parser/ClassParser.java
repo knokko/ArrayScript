@@ -170,7 +170,25 @@ public class ClassParser extends AbstractNamespaceParser {
 		} else if (colonOrCurly.isOperator() && colonOrCurly.getOperator() == Operator.OPEN_BLOCK) {
 			
 			// The programmer creates a getter with a custom body
-			classBuilder.addCustomSetter(name, modifiers, new ExecutableBuilder(ExecutableParser.parseInitial(reader)));
+			classBuilder.addCustomSetter(name, modifiers, "newValue", new ExecutableBuilder(ExecutableParser.parseInitial(reader)));
+		} else if (colonOrCurly.isOperator() && colonOrCurly.getOperator() == Operator.OPEN_BRACKET) {
+			
+			// The programmer also wants a custom parameter name
+			SourceElement paramName = reader.next();
+			
+			if (paramName == null) {
+				throw new ParsingException("Expected name of setter parameter, but end of file was reached");
+			}
+			
+			if (!paramName.isWord()) {
+				throw new ParsingException("Expected name of setter parameter, but found " + paramName);
+			}
+			
+			assumeOperator(reader.next(), Operator.CLOSE_BRACKET);
+			
+			assumeOperator(reader.next(), Operator.OPEN_BLOCK);
+			
+			classBuilder.addCustomSetter(name, modifiers, paramName.getWord(), new ExecutableBuilder(ExecutableParser.parseInitial(reader)));
 		} else {
 			throw new ParsingException("Expected a ';' or '{' after setter " + name + ", but found " + colonOrCurly);
 		}

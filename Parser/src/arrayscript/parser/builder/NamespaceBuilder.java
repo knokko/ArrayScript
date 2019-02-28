@@ -286,18 +286,18 @@ public class NamespaceBuilder implements ElementBuilder {
 			out.println();
 		}
 		for (ClassBuilder cb : classes) {
-			printTest1(out, indentLevel, "class " + cb.getName() + "{");
-			// TODO expand class builders
+			printTest1(out, indentLevel, collectionToString(cb.getModifiers()) + " class " + cb.getName() + "{");
+			cb.printTest1(out, indentLevel + 1);
 			printTest1(out, indentLevel, "}");
 			out.println();
 		}
 		for (VariableBuilder variable : variables) {
-			printTest1(out, indentLevel, variable.getType().getReadableTypeName() + " " + variable.getName() + " = ... ;");
+			printTest1(out, indentLevel, collectionToString(variable.getModifiers()) + " " + variable.getType().getReadableTypeName() + " " + variable.getName() + " = ... ;");
 			out.println();
 		}
 		for (FunctionBuilder function : functions) {
-			printTest1(out, indentLevel, function.getReturnType().getReadableTypeName() + " " + function.getName() + "( ... ) {");
-			// TODO expand function body
+			printTest1(out, indentLevel, collectionToString(function.getModifiers()) + " " + function.getReturnTypeName() + " " + function.getName() + "(" + function.getParameters() + ") {");
+			printTest1(out, indentLevel + 1, "function body...");
 			printTest1(out, indentLevel, "}");
 			out.println();
 		}

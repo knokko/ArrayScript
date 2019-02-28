@@ -8,6 +8,34 @@ public class ParamsBuilder {
 		this.params = params;
 	}
 	
+	@Override
+	public String toString() {
+		String[] strings = new String[params.length];
+		for (int index = 0; index < params.length; index++) {
+			strings[index] = params[index].toString();
+		}
+		
+		int length = 0;
+		for (String string : strings) {
+			length += string.length() + 2;
+		}
+		if (strings.length != 0) {
+			length -= 2;
+		}
+		
+		StringBuilder builder = new StringBuilder(length);
+		for (int index = 0; index < strings.length - 1; index++) {
+			builder.append(strings[index]);
+			builder.append(',');
+			builder.append(' ');
+		}
+		if (strings.length != 0) {
+			builder.append(strings[strings.length - 1]);
+		}
+		
+		return builder.toString();
+	}
+	
 	public ParamBuilder[] getParams() {
 		return params;
 	}

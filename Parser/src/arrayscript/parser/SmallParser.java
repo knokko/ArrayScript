@@ -177,9 +177,22 @@ public class SmallParser {
 		return elements;
 	}
 	
+	/**
+	 * Reads an element type or variable type (possibly the void return type) from the provided source file 
+	 * reader. This method is written to handle variables types like SomeNamespace.SomeClass. If no type can 
+	 * be read, a ParsingException will be thrown.
+	 * @param reader The source file reader to read the type from
+	 * @return An instance of SomeType that contains the read type if a type was read
+	 * @throws IOException If the provided reader throws an IOException
+	 * @throws ParsingException If the provided reader throws a ParsingException or no type could be read
+	 */
 	public static SomeType parseSomeType(SourceFileReader reader) throws IOException, ParsingException {
 		
 		SourceElement first = reader.next();
+		
+		if (first == null) {
+			throw new ParsingException("Expected a type, but end of file was reached");
+		}
 		
 		// Primitive type or element type
 		if (first.isKeyword()) {
@@ -297,7 +310,7 @@ public class SmallParser {
 		}
 		
 		/**
-		 * @return The variable type that this type holds if this type holds variable type
+		 * @return The variable type that this type holds if this type holds a variable type
 		 * @throws UnsupportedOperationException If this type doesn't hold a variable type, but an element 
 		 * type or void return type
 		 */

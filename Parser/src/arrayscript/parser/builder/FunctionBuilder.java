@@ -48,6 +48,9 @@ public class FunctionBuilder implements ElementBuilder {
 	}
 	
 	public TypeBuilder getReturnType() {
+		if (returnType == null) {
+			throw new UnsupportedOperationException("This function doesn't have a return type");
+		}
 		return returnType;
 	}
 	
@@ -57,6 +60,14 @@ public class FunctionBuilder implements ElementBuilder {
 	
 	public ExecutableBuilder getBody() {
 		return body;
+	}
+	
+	public String getReturnTypeName() {
+		if (returnType == null) {
+			return "void";
+		} else {
+			return returnType.getReadableTypeName();
+		}
 	}
 	
 	public boolean isConfirmed() {

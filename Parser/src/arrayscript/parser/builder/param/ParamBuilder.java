@@ -18,6 +18,11 @@ public class ParamBuilder {
 		this.name = name;
 	}
 	
+	@Override
+	public String toString() {
+		return type.getReadableTypeName() + " " + name;
+	}
+	
 	public String getName() {
 		return name;
 	}

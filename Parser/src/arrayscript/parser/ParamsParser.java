@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import arrayscript.lang.Operator;
+import arrayscript.parser.SmallParser.SomeType;
 import arrayscript.parser.builder.param.ParamBuilder;
 import arrayscript.parser.builder.param.ParamsBuilder;
 import arrayscript.parser.source.SourceElement;
@@ -48,18 +49,13 @@ public class ParamsParser {
 				}
 			} else if (first.isWord() || first.isKeyword()){
 				
-				// The first is part of the type name, so pass it in a HistorySourceFileReader
-				SmallParser.SomeType type = SmallParser.parseSomeType(new HistorySourceFileReader(reader, first));
+				SomeType type = SmallParser.parseSomeType(new HistorySourceFileReader(reader, first));
 				
-				if (type.isElementType()) {
-					throw new ParsingException("Expected a variable type, but found " + type.getElementType());
+				if (!type.isVariableType()) {
+					throw new ParsingException("Expected a parameter type, but found " + type);
 				}
 				
 				SourceElement second = type.getNext();
-				
-				if (second == null) {
-					throw new ParsingException("Unfinished parameters");
-				}
 				
 				// The second must be the parameter name
 				if (second.isWord()) {

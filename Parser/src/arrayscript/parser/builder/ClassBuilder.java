@@ -1,5 +1,6 @@
 package arrayscript.parser.builder;
 
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -245,11 +246,12 @@ public class ClassBuilder implements ElementBuilder {
 	 * will NOT check if a property with the given name exists, that must be done in a later parsing stage.
 	 * @param propertyName The name of the property the setter will be for
 	 * @param modifiers The modifiers of the setter
+	 * @param paramName The name of the 'newValue' parameter that should be used within the setter body
 	 * @param body The custom body of the setter
 	 * @throws ParsingException If the setter can't be added to this class builder
 	 */
-	public void addCustomSetter(String propertyName, Set<Modifier> modifiers, ExecutableBuilder body) throws ParsingException {
-		addSetter(new SetterBuilder(propertyName, modifiers, body));
+	public void addCustomSetter(String propertyName, Set<Modifier> modifiers, String paramName, ExecutableBuilder body) throws ParsingException {
+		addSetter(new SetterBuilder(propertyName, modifiers, paramName, body));
 	}
 	
 	private void addSetter(SetterBuilder setter) throws ParsingException {
@@ -293,5 +295,104 @@ public class ClassBuilder implements ElementBuilder {
 		ConstructorBuilder constructor = new ConstructorBuilder(modifiers, parameters, head, body);
 		elements.add(constructor);
 		constructors.add(constructor);
+	}
+	
+	public void printTest1(PrintStream out, int indentLevel) {
+		out.println();
+		/*
+		for (NamespaceBuilder namespace : namespaces) {
+			printTest1(out, indentLevel, "namespace " + collectionToString(namespace.modifiers) + " " + namespace.name + " {");
+			namespace.printTest1(out, indentLevel + 1);
+			printTest1(out, indentLevel, "}");
+			out.println();
+		}
+		for (ClassBuilder cb : classes) {
+			printTest1(out, indentLevel, collectionToString(cb.getModifiers()) + " class " + cb.getName() + "{");
+			cb.printTest1(out, indentLevel + 1);
+			printTest1(out, indentLevel, "}");
+			out.println();
+		}*/
+		for (VariableBuilder variable : variables) {
+			printTest1(out, indentLevel, collectionToString(variable.getModifiers()) + " " + variable.getType().getReadableTypeName() + " " + variable.getName() + " = ... ;");
+			out.println();
+		}
+		for (FunctionBuilder function : functions) {
+			printTest1(out, indentLevel, collectionToString(function.getModifiers()) + " " + function.getReturnTypeName() + " " + function.getName() + "(" + function.getParameters() + ") {");
+			printTest1(out, indentLevel + 1, "function body...");
+			printTest1(out, indentLevel, "}");
+			out.println();
+		}
+		for (ConstructorBuilder constructor : constructors) {
+			printTest1(out, indentLevel, collectionToString(constructor.getModifiers()) + " constructor(" + constructor.getParameteters() + ") {...} {...}");
+		}
+		for (MethodBuilder method : methods) {
+			printTest1(out, indentLevel, collectionToString(method.getModifiers()) + " " + method.getReturnTypeName() + " " + method.getName() + "(" + method.getParameters() + "){");
+			printTest1(out, indentLevel + 1, "method body...");
+			printTest1(out, indentLevel, "}");
+			out.println();
+		}
+		for (PropertyBuilder prop : properties) {
+			if (prop.hasDefaultValue()) {
+				printTest1(out, indentLevel, collectionToString(prop.getModifiers()) + " " + prop.getType().getReadableTypeName() + " " + prop.getName() + " = ... ;");
+			} else {
+				printTest1(out, indentLevel, collectionToString(prop.getModifiers()) + " " + prop.getType().getReadableTypeName() + " " + prop.getName() + ";");
+			}
+		}
+		for (GetterBuilder getter : getters) {
+			if (getter.hasCustomBody()) {
+				printTest1(out, indentLevel, collectionToString(getter.getModifiers()) + " getter " + getter.getName() + "{ ... }");
+			} else {
+				printTest1(out, indentLevel, collectionToString(getter.getModifiers()) + " getter " + getter.getName() + ";");
+			}
+		}
+		for (SetterBuilder setter : setters) {
+			if (setter.isDefault()) {
+				printTest1(out, indentLevel, collectionToString(setter.getModifiers()) + " setter " + setter.getName() + ";");
+			} else {
+				printTest1(out, indentLevel, collectionToString(setter.getModifiers()) + " setter " + setter.getName() + " (newValue) { ... }");
+			}
+		}
+		/*
+		for (InitBuilder init : inits) {
+			printTest1(out, indentLevel, "init " + init.getName() + ";");
+			out.println();
+		}
+		for (MainBuilder main : mains) {
+			printTest1(out, indentLevel, "main " + main.getName() + ";");
+		}*/
+		out.println();
+	}
+	
+	private void printTest1(PrintStream out, int indentLevel, String message) {
+		for (int counter = 0; counter < indentLevel; counter++) {
+			out.print("    ");
+		}
+		out.println(message);
+	}
+	
+	private String collectionToString(Collection<? extends Object> collection) {
+		if (collection.isEmpty()) {
+			return "";
+		}
+		String[] strings = new String[collection.size()];
+		int size = 0;
+		int index = 0;
+		for (Object next : collection) {
+			strings[index] = next.toString();
+			
+			// for the whitespace between the elements
+			size += strings[index].length() + 1;
+			index++;
+		}
+		
+		// The last element doesn't need a whitespace at the end
+		size--;
+		StringBuilder builder = new StringBuilder(size);
+		for (index = 0; index < strings.length - 1; index++) {
+			builder.append(strings[index]);
+			builder.append(' ');
+		}
+		builder.append(strings[strings.length - 1]);
+		return builder.toString();
 	}
 }

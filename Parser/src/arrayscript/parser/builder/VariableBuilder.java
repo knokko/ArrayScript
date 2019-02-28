@@ -55,7 +55,7 @@ public class VariableBuilder implements ElementBuilder {
 		return new Variable(name, type.getType(), initialValue.getValue());
 	}
 	
-	public Set<Modifier> getMOdifiers(){
+	public Set<Modifier> getModifiers(){
 		return modifiers;
 	}
 	

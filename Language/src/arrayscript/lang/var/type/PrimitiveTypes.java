@@ -17,6 +17,8 @@ public class PrimitiveTypes {
 	public static final TypeUInt8 UINT8 = new TypeUInt8();
 	public static final TypeUInt16 UINT16 = new TypeUInt16();
 	public static final TypeUInt32 UINT32 = new TypeUInt32();
+	public static final TypeFloat32 FLOAT32 = new TypeFloat32();
+	public static final TypeFloat64 FLOAT64 = new TypeFloat64();
 	
 	private static final Map<String,Type> NAME_MAP;
 	
