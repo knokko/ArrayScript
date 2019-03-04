@@ -61,23 +61,11 @@ public class ClassParser extends AbstractNamespaceParser {
 		
 		ParamsBuilder params = ParamsParser.parse(reader);
 		
-		SourceElement openCurly = reader.next();
-		if (openCurly == null) {
-			throw new ParsingException("Expected '{', but end of file was reached");
-		}
-		if (!openCurly.isOperator() || openCurly.getOperator() != Operator.OPEN_BLOCK) {
-			throw new ParsingException("Expected '{', but found " + openCurly);
-		}
+		assumeOperator(reader.next(), Operator.OPEN_BLOCK);
 		
 		List<SourceElement> head = SmallParser.readBlock(reader);
 		
-		openCurly = reader.next();
-		if (openCurly == null) {
-			throw new ParsingException("Expected the '{' to start the constructor body, but end of file was reached");
-		}
-		if (!openCurly.isOperator() || openCurly.getOperator() != Operator.OPEN_BLOCK) {
-			throw new ParsingException("Expected the '{' to start the constructor body, but found " + openCurly);
-		}
+		assumeOperator(reader.next(), Operator.OPEN_BLOCK);
 		
 		ExecutableBuilder body = new ExecutableBuilder(ExecutableParser.parseInitial(reader));
 		
@@ -225,5 +213,10 @@ public class ClassParser extends AbstractNamespaceParser {
 			// A property is being declared
 			classBuilder.addProperty(name, type, modifiers, defaultValue);
 		}
+	}
+
+	@Override
+	protected void addImport(String[] imported) throws ParsingException {
+		classBuilder.addImport(imported);
 	}
 }

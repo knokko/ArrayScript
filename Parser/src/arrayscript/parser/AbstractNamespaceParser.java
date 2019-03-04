@@ -1,8 +1,11 @@
 package arrayscript.parser;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
+import arrayscript.lang.Keyword;
 import arrayscript.lang.Modifier;
 import arrayscript.lang.Operator;
 import arrayscript.lang.element.ElementType;
@@ -187,6 +190,18 @@ abstract class AbstractNamespaceParser {
 	 */
 	protected abstract void defineVariable(SourceFileReader reader, SourceElement nextElement, Set<Modifier> modifiers, TypeBuilder type, String name) throws IOException, ParsingException;
 	
+	/**
+	 * This method will be called after this abstract namespace parser has finished parsing an import.
+	 * Parts of imports are separated by dots and imports are finished with a semicolon. The first part of
+	 * the import (everything after the import keyword and before the first dot) will be the first element
+	 * of 'imported' (the parameter). The last part of the import (the text between the last dot and the
+	 * semicolon) will be the last element of 'imported'. When the import only has 1 part (so not a single
+	 * dot), 'imported' will have a length of 1.
+	 * @param imported The array containing all parts of the thing to import
+	 * @throws ParsingException If the import can'be added to this abstract namespace
+	 */
+	protected abstract void addImport(String[] imported) throws ParsingException;
+	
 	protected void assumeOperator(SourceElement nextElement, Operator operator) throws ParsingException {
 		
 		if (nextElement == null) {
@@ -223,6 +238,45 @@ abstract class AbstractNamespaceParser {
 				// No other operators are allowed at this position
 				else {
 					throw new ParsingException("Unexpected operator " + first.getOperator());
+				}
+			} else if (first.isKeyword() && first.getKeyword() == Keyword.IMPORT) {
+				
+				// I don't expect many imports longer than 4 parts
+				List<String> importParts = new ArrayList<String>(4);
+				
+				// Looping until we find the semicolon is easier than a loop condition
+				while (true) {
+					SourceElement part = reader.next();
+					
+					if (part == null) {
+						throw new ParsingException("End of file was reached before input was finished");
+					}
+					
+					if (!part.isWord()) {
+						throw new ParsingException("Expected name of element to import, but found " + part);
+					}
+					
+					importParts.add(part.getWord());
+					
+					SourceElement after = reader.next();
+					
+					if (after == null) {
+						throw new ParsingException("Expected a '.' or ';', but end of file was reached");
+					}
+					
+					// The import is not yet finished, so there will be another part
+					if (after.isOperator() && after.getOperator() == Operator.PROPERTY) {
+						continue;
+					}
+					
+					// This was the last part of the import
+					else if (after.isOperator() && after.getOperator() == Operator.SEMICOLON) {
+						break;
+					}
+					
+					else {
+						throw new ParsingException("Expected '.' or ';', but found " + after);
+					}
 				}
 			} else if (first.isWord() || first.isKeyword()) {
 				

@@ -22,6 +22,7 @@ public class ClassBuilder implements ElementBuilder {
 	private final NamespaceBuilder namespace;
 	private final Set<Modifier> modifiers;
 	
+	private final Collection<ImportBuilder> imports;
 	private final Collection<ElementBuilder> elements;
 	private final Collection<FunctionBuilder> functions;
 	private final Collection<VariableBuilder> variables;
@@ -42,6 +43,7 @@ public class ClassBuilder implements ElementBuilder {
 		}
 		this.modifiers = modifiers;
 		
+		this.imports = new ArrayList<ImportBuilder>(5);
 		this.elements = new ArrayList<ElementBuilder>(20);
 		this.functions = new ArrayList<FunctionBuilder>(2);
 		this.variables = new ArrayList<VariableBuilder>(2);
@@ -295,6 +297,26 @@ public class ClassBuilder implements ElementBuilder {
 		ConstructorBuilder constructor = new ConstructorBuilder(modifiers, parameters, head, body);
 		elements.add(constructor);
 		constructors.add(constructor);
+	}
+	
+	/**
+	 * Adds a new import with the given parts to this class if the import can be added. If the import can't
+	 * be added, a ParsingException will be thrown.
+	 * @param parts The parts of the input, where the first element is the first part and the last element
+	 * is the last part and name of the import
+	 * @throws ParsingException If the import can't be added to this class
+	 */
+	public void addImport(String[] parts) throws ParsingException {
+		ImportBuilder newImport = new ImportBuilder(parts);
+		
+		// Don't allow ambiguous imports
+		for (ImportBuilder current : imports) {
+			if (current.getName().equals(newImport.getName())) {
+				throw new ParsingException("Multiple imports in class " + name + " end with '" + current.getName() + "'");
+			}
+		}
+		
+		imports.add(newImport);
 	}
 	
 	public void printTest1(PrintStream out, int indentLevel) {

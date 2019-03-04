@@ -24,6 +24,7 @@ public class NamespaceBuilder implements ElementBuilder {
 	
 	private final Set<Modifier> modifiers;
 	
+	private final Collection<ImportBuilder> imports;
 	private final Collection<ElementBuilder> elements;
 	
 	private final Collection<NamespaceBuilder> namespaces;
@@ -52,6 +53,7 @@ public class NamespaceBuilder implements ElementBuilder {
 			}
 		}
 		this.modifiers = modifiers;
+		this.imports = new ArrayList<ImportBuilder>(20);
 		this.elements = new ArrayList<ElementBuilder>(30);
 		this.namespaces = new ArrayList<NamespaceBuilder>();
 		this.classes = new ArrayList<ClassBuilder>();
@@ -234,6 +236,26 @@ public class NamespaceBuilder implements ElementBuilder {
 		mains.add(mainBuilder);
 		
 		return mainBuilder;
+	}
+	
+	/**
+	 * Adds a new import with the given parts to this namespace if the import can be added. If the import 
+	 * can't be added, a ParsingException will be thrown.
+	 * @param parts The parts of the input, where the first element is the first part and the last element
+	 * is the last part and name of the import
+	 * @throws ParsingException If the import can't be added to this namespace
+	 */
+	public void addImport(String[] parts) throws ParsingException {
+		ImportBuilder newImport = new ImportBuilder(parts);
+		
+		// Don't allow ambiguous imports
+		for (ImportBuilder current : imports) {
+			if (current.getName().equals(newImport.getName())) {
+				throw new ParsingException("Multiple imports in namespace " + name + " end with '" + current.getName() + "'");
+			}
+		}
+		
+		imports.add(newImport);
 	}
 	
 	public boolean isGlobal() {
