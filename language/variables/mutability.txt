@@ -1,0 +1,24 @@
+I should find a better name for this because 'mutability' is quite misleading.
+
+Most variables have an outer mutability and an inner mutability.
+The exceptions are variables whose type is primitive, but not 'any'.
+Those variables will only have outer mutability.
+
+The outer mutability specifies whether or not the value of the variable can be set to another value and/or the value of another variable can be set to that value.
+The inner mutability specifies how the properties of the value of the variable can be accessed.
+The possible mutabilities will be 'read', 'write', 'mut' and 'none'.
+
+A single mutability should be defined by writing the outer mutability first and the inner mutability second.
+There should be no whitespace between them, so it should be a single word, for instance 'readmut'.
+If the variable doesn't have an inner mutability, only the outer mutability should be written, for instance 'mut'.
+
+A mutability needs to be defined for every visibility of the variable.
+If no mutability is defined for a visibility, it will have a default mutability of 'nonenone'.
+
+The mutability needs to be written right after the visibility for the mutability and always before the name and type (if the type needs to be defined).
+The mutability can also be written at the start of a variable declaration, in which case its visibility will be the default visibility of the variable.
+
+Some examples:
+private readmut SomeType simpleVariable;
+readread SomeType useDefaultVisibility;
+private mutmut public readread SomeType multipleMutabilities;
